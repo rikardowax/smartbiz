@@ -1,15 +1,15 @@
-import { getTranslations } from "next-intl/server";
-import Image from "next/image";
-import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
-  ShoppingBag,
   BarChart3,
   Bot,
   MessageCircle,
+  ShoppingBag,
   Smartphone,
+  Store,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 type PageParams = Promise<{ locale: string }>;
 
@@ -30,9 +30,7 @@ export default async function HomePage({ params }: { params: PageParams }) {
               <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 {t("title")}
               </h1>
-              <p className="mt-6 text-lg leading-8 text-muted-foreground">
-                {t("subtitle")}
-              </p>
+              <p className="mt-6 text-lg leading-8 text-muted-foreground">{t("subtitle")}</p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Button asChild size="lg">
                   <Link href="/marketplace">
@@ -46,15 +44,11 @@ export default async function HomePage({ params }: { params: PageParams }) {
               </div>
             </div>
             <div className="relative hidden lg:block">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-2xl ring-1 ring-border/40">
-                <Image
-                  src="https://picsum.photos/seed/smartbiz/800/600"
-                  alt="SmartBiz"
-                  fill
-                  priority
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
+              <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-brand-gradient shadow-2xl ring-1 ring-border/40">
+                <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_1px_1px,hsl(var(--primary-foreground)/0.4)_1px,transparent_0)] [background-size:24px_24px]" />
+                <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-3xl bg-white/20 p-6 text-white shadow-lg backdrop-blur-sm">
+                  <Store className="h-16 w-16" strokeWidth={1.5} />
+                </div>
               </div>
             </div>
           </div>
@@ -102,9 +96,7 @@ export default async function HomePage({ params }: { params: PageParams }) {
             />
             <FeatureCard
               icon={Smartphone}
-              title={
-                locale === "fr" ? "Conçu pour mobile" : "Built for mobile"
-              }
+              title={locale === "fr" ? "Conçu pour mobile" : "Built for mobile"}
               description={
                 locale === "fr"
                   ? "Interface fluide sur téléphone, tablette et ordinateur pour vendre partout."

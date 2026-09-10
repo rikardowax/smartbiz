@@ -1,8 +1,8 @@
-import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { routing } from "@/i18n/routing";
-import { Providers } from "@/components/providers";
+import { getMessages, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/header";
+import { Providers } from "@/components/providers";
+import { routing } from "@/i18n/routing";
 
 type PageParams = Promise<{ locale: string }>;
 

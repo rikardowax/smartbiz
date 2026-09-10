@@ -1,25 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { Link, usePathname } from "@/i18n/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Link, usePathname } from "@/i18n/navigation";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Menu, X, Moon, Sun, ShoppingCart, Store } from "lucide-react";
+import { useAuthStore } from "@/stores/auth-store";
 
 export function Header({ locale }: { locale: string }) {
   const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const otherLocale = locale === "fr" ? "en" : "fr";
+  const { isAuthenticated, user, logout } = useAuthStore();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const links = [
     { href: "/marketplace", label: t("marketplace") },
     { href: "/dashboard", label: t("dashboard") },
     { href: "/assistant", label: t("assistant") },
   ];
+
+  const handleLogout = async () => {
+    const { refreshToken } = useAuthStore.getState();
+    if (refreshToken) {
+      try {
+        await apiFetch("/auth/logout", {
+          method: "POST",
+          body: JSON.stringify({ refreshToken }),
+        });
+      } catch {
+        // ignore network errors on logout
+      }
+    }
+    logout();
+    window.location.href = "/";
+  };
+
+  const initials =
+    user && (user.firstName || user.lastName)
+      ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase()
+      : (user?.phone.slice(-2).toUpperCase() ?? "");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -28,9 +57,7 @@ export function Header({ locale }: { locale: string }) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-white shadow">
             <Store className="h-5 w-5" />
           </div>
-          <span className="text-xl font-extrabold text-brand-gradient">
-            SmartBiz
-          </span>
+          <span className="text-xl font-extrabold text-brand-gradient">SmartBiz</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -38,9 +65,7 @@ export function Header({ locale }: { locale: string }) {
             <NavLink
               key={link.href}
               href={link.href}
-              active={
-                pathname === link.href || pathname.startsWith(`${link.href}/`)
-              }
+              active={pathname === link.href || pathname.startsWith(`${link.href}/`)}
             >
               {link.label}
             </NavLink>
@@ -66,19 +91,45 @@ export function Header({ locale }: { locale: string }) {
             {otherLocale.toUpperCase()}
           </Link>
 
-          <Button asChild variant="ghost" size="icon">
-            <Link href="/cart">
-              <ShoppingCart className="h-5 w-5" />
-            </Link>
-          </Button>
+          {mounted && isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="icon">
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
 
-          <Button asChild variant="outline" size="sm">
-            <Link href="/login">{t("login")}</Link>
-          </Button>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                {initials || <User className="h-4 w-4" />}
+              </div>
 
-          <Button asChild size="sm">
-            <Link href="/register">{t("register")}</Link>
-          </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="mr-1.5 h-4 w-4" />
+                {t("logout")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="icon">
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              <Button asChild variant="outline" size="sm">
+                <Link href="/login">{t("login")}</Link>
+              </Button>
+
+              <Button asChild size="sm">
+                <Link href="/register">{t("register")}</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
@@ -97,11 +148,7 @@ export function Header({ locale }: { locale: string }) {
             onClick={() => setMobileOpen((s) => !s)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
@@ -110,22 +157,31 @@ export function Header({ locale }: { locale: string }) {
         <div className="border-t border-border/60 px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-2">
             {links.map((link) => (
-              <MobileNavLink
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-              >
+              <MobileNavLink key={link.href} href={link.href} onClick={() => setMobileOpen(false)}>
                 {link.label}
               </MobileNavLink>
             ))}
-            <div className="mt-2 flex flex-col gap-2">
-              <Button asChild variant="outline">
-                <Link href="/login">{t("login")}</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/register">{t("register")}</Link>
-              </Button>
-            </div>
+
+            {mounted && isAuthenticated ? (
+              <>
+                <div className="mt-2 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground">
+                  {user?.firstName} {user?.lastName}
+                </div>
+                <Button onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t("logout")}
+                </Button>
+              </>
+            ) : (
+              <div className="mt-2 flex flex-col gap-2">
+                <Button asChild variant="outline">
+                  <Link href="/login">{t("login")}</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/register">{t("register")}</Link>
+                </Button>
+              </div>
+            )}
           </nav>
         </div>
       )}
@@ -147,9 +203,7 @@ function NavLink({
       href={href}
       className={cn(
         "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-        active
-          ? "bg-accent text-accent-foreground"
-          : "text-muted-foreground",
+        active ? "bg-accent text-accent-foreground" : "text-muted-foreground",
       )}
     >
       {children}

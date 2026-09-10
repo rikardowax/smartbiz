@@ -11,20 +11,11 @@ export function Providers({
 }: {
   children: React.ReactNode;
   locale: string;
-  messages: Record<string, any>;
+  messages: React.ComponentProps<typeof NextIntlClientProvider>["messages"];
 }) {
   return (
-    <NextIntlClientProvider
-      locale={locale}
-      messages={messages}
-      timeZone="Africa/Douala"
-    >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone="Africa/Douala">
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         {children}
         <Toaster richColors closeButton position="top-center" />
       </ThemeProvider>

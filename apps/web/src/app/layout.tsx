@@ -13,13 +13,9 @@ export const metadata: Metadata = {
   description: "Marketplace and smart ERP for African merchants",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={`${plusJakarta.variable} h-full`} suppressHydrationWarning>
+    <html lang="fr" dir="ltr" className={`${plusJakarta.variable} h-full`} suppressHydrationWarning>
       <body className="min-h-full font-sans antialiased">{children}</body>
     </html>
   );
