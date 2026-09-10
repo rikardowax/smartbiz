@@ -7,6 +7,14 @@ import { JwtAuthGuard } from "./common/guards/jwt-auth.guard.js";
 import { RolesGuard } from "./common/guards/roles.guard.js";
 import { configuration, validateEnv } from "./config/configuration.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
+import { CategoriesModule } from "./modules/categories/categories.module.js";
+import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
+import { FinanceModule } from "./modules/finance/finance.module.js";
+import { OrdersModule } from "./modules/orders/orders.module.js";
+import { PartnersModule } from "./modules/partners/partners.module.js";
+import { ProductsModule } from "./modules/products/products.module.js";
+import { ShopsModule } from "./modules/shops/shops.module.js";
+import { StockModule } from "./modules/stock/stock.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 
 @Module({
@@ -20,6 +28,14 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 120 }]),
     PrismaModule,
     AuthModule,
+    ShopsModule,
+    CategoriesModule,
+    ProductsModule,
+    StockModule,
+    PartnersModule,
+    OrdersModule,
+    FinanceModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

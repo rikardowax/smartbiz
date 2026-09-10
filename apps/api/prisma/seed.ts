@@ -684,9 +684,7 @@ async function main() {
         deliveryLine1: seed.line1,
         placedAt,
         confirmedAt: seed.status === OrderStatus.PENDING ? null : daysAgo(seed.daysAgo, 12),
-        shippedAt: isFulfilled(seed.status)
-          ? daysAgo(Math.max(0, seed.daysAgo - 1), 9)
-          : null,
+        shippedAt: isFulfilled(seed.status) ? daysAgo(Math.max(0, seed.daysAgo - 1), 9) : null,
         deliveredAt:
           seed.status === OrderStatus.DELIVERED ? daysAgo(Math.max(0, seed.daysAgo - 2), 15) : null,
         items: { create: items },
