@@ -1,0 +1,46 @@
+{
+  "name": "smartbiz",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @smartbiz/api --filter @smartbiz/web dev",
+    "dev:api": "pnpm --filter @smartbiz/api dev",
+    "dev:web": "pnpm --filter @smartbiz/web dev",
+    "build": "pnpm -r build",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @smartbiz/api db:generate",
+    "db:migrate": "pnpm --filter @smartbiz/api db:migrate",
+    "db:seed": "pnpm --filter @smartbiz/api db:seed",
+    "db:studio": "pnpm --filter @smartbiz/api db:studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@prisma/engines",
+      "@swc/core",
+      "esbuild",
+      "prisma",
+      "protobufjs",
+      "sharp",
+      "unrs-resolver"
+    ],
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@nestjs/common": "12",
+        "@nestjs/core": "12",
+        "typescript": "6"
+      }
+    }
+  }
+}

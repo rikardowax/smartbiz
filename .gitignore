@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# tests / coverage
+coverage/
+.nyc_output/
+
+# client Prisma généré (recréé par `pnpm db:generate`, y compris au build Render)
+apps/api/src/generated/
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# uploads locaux
+apps/api/uploads/

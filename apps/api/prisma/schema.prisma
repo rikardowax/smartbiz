@@ -1,0 +1,533 @@
+// SmartBiz — schéma de données
+//
+// Convention monétaire : tous les montants sont des entiers exprimés dans
+// l'unité la plus petite de la devise. La devise par défaut est le XAF (FCFA)
+// qui n'a pas de sous-unité : 1 500 => 1 500 FCFA. Cela évite les problèmes
+// d'arrondi et de sérialisation des décimaux.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Énumérations
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  VENDEUR
+  ACHETEUR
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  MOBILE_MONEY
+  BANK_TRANSFER
+  CARD
+}
+
+enum SalesChannel {
+  MARKETPLACE
+  WHATSAPP
+  IN_STORE
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  RETURN
+  LOSS
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  TOOL
+  SYSTEM
+}
+
+enum BotMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+// ---------------------------------------------------------------------------
+// Identité & accès
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String?   @unique
+  phone        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role      @default(ACHETEUR)
+  avatarUrl    String?
+  locale       String    @default("fr")
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  shops                 Shop[]
+  addresses             Address[]
+  orders                Order[]                 @relation("OrdersAsBuyer")
+  reviews               Review[]
+  stockMovements        StockMovement[]
+  refreshTokens         RefreshToken[]
+  passwordResets        PasswordResetToken[]
+  notifications         Notification[]
+  assistantConversation AssistantConversation[]
+  orderEvents           OrderEvent[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String
+  recipient String
+  phone     String
+  country   String   @default("Cameroun")
+  city      String
+  line1     String
+  line2     String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------------------
+// Boutiques & catalogue
+// ---------------------------------------------------------------------------
+
+model Shop {
+  id             String     @id @default(cuid())
+  ownerId        String
+  name           String
+  slug           String     @unique
+  description    String?
+  logoUrl        String?
+  coverUrl       String?
+  phone          String
+  whatsappNumber String?
+  email          String?
+  country        String     @default("Cameroun")
+  city           String
+  address        String?
+  currency       String     @default("XAF")
+  status         ShopStatus @default(PENDING)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products          Product[]
+  orders            Order[]
+  customers         Customer[]
+  suppliers         Supplier[]
+  stockMovements    StockMovement[]
+  transactions      Transaction[]
+  botConversations  BotConversation[]
+  assistantSessions AssistantConversation[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("shops")
+}
+
+model Category {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  iconName String?
+  parentId String?
+  position Int     @default(0)
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id                String        @id @default(cuid())
+  shopId            String
+  categoryId        String?
+  name              String
+  slug              String
+  description       String?
+  sku               String?
+  barcode           String?
+  unit              String        @default("pièce")
+  price             Int
+  compareAtPrice    Int?
+  costPrice         Int?
+  stockQuantity     Int           @default(0)
+  lowStockThreshold Int           @default(5)
+  images            String[]      @default([])
+  status            ProductStatus @default(DRAFT)
+  isFeatured        Boolean       @default(false)
+  ratingAverage     Float         @default(0)
+  ratingCount       Int           @default(0)
+  soldCount         Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
+  reviews        Review[]
+
+  @@unique([shopId, slug])
+  @@unique([shopId, sku])
+  @@index([shopId, status])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+// ---------------------------------------------------------------------------
+// ERP — stock, tiers, finances
+// ---------------------------------------------------------------------------
+
+model StockMovement {
+  id         String            @id @default(cuid())
+  shopId     String
+  productId  String
+  userId     String?
+  supplierId String?
+  type       StockMovementType
+  quantity   Int
+  unitCost   Int?
+  stockAfter Int
+  reason     String?
+  reference  String?
+  createdAt  DateTime          @default(now())
+
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  supplier Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, createdAt])
+  @@index([productId])
+  @@map("stock_movements")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  shopId      String
+  name        String
+  phone       String
+  email       String?
+  city        String?
+  address     String?
+  notes       String?
+  ordersCount Int      @default(0)
+  totalSpent  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shop   Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([shopId, phone])
+  @@index([shopId])
+  @@map("customers")
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+
+  @@index([shopId])
+  @@map("suppliers")
+}
+
+model Transaction {
+  id         String          @id @default(cuid())
+  shopId     String
+  orderId    String?
+  type       TransactionType
+  category   String
+  label      String
+  amount     Int
+  occurredAt DateTime        @default(now())
+  createdAt  DateTime        @default(now())
+
+  shop  Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, occurredAt])
+  @@map("transactions")
+}
+
+// ---------------------------------------------------------------------------
+// Commandes
+// ---------------------------------------------------------------------------
+
+model Order {
+  id          String        @id @default(cuid())
+  orderNumber String        @unique
+  shopId      String
+  buyerId     String?
+  customerId  String?
+  channel     SalesChannel  @default(MARKETPLACE)
+  status      OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(CASH_ON_DELIVERY)
+
+  subtotal    Int
+  deliveryFee Int    @default(0)
+  discount    Int    @default(0)
+  total       Int
+  currency    String @default("XAF")
+
+  contactName    String
+  contactPhone   String
+  deliveryCity   String?
+  deliveryLine1  String?
+  deliveryNotes  String?
+
+  placedAt    DateTime  @default(now())
+  confirmedAt DateTime?
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  buyer        User?         @relation("OrdersAsBuyer", fields: [buyerId], references: [id], onDelete: SetNull)
+  customer     Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  events       OrderEvent[]
+  transactions Transaction[]
+
+  @@index([shopId, status])
+  @@index([buyerId])
+  @@index([placedAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  productId   String?
+  productName String
+  unitPrice   Int
+  quantity    Int
+  total       Int
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  userId    String?
+  status    OrderStatus
+  message   String
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+// ---------------------------------------------------------------------------
+// Agents IA
+// ---------------------------------------------------------------------------
+
+model AssistantConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  shopId    String?
+  title     String   @default("Nouvelle conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop     Shop?              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  messages AssistantMessage[]
+
+  @@index([userId, updatedAt])
+  @@map("assistant_conversations")
+}
+
+model AssistantMessage {
+  id             String      @id @default(cuid())
+  conversationId String
+  role           MessageRole
+  content        String
+  toolName       String?
+  toolPayload    Json?
+  createdAt      DateTime    @default(now())
+
+  conversation AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("assistant_messages")
+}
+
+model BotConversation {
+  id            String   @id @default(cuid())
+  shopId        String
+  customerPhone String
+  customerName  String?
+  state         Json     @default("{}")
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  shop     Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  messages BotMessage[]
+
+  @@unique([shopId, customerPhone])
+  @@index([shopId, lastMessageAt])
+  @@map("bot_conversations")
+}
+
+model BotMessage {
+  id             String              @id @default(cuid())
+  conversationId String
+  direction      BotMessageDirection
+  content        String
+  payload        Json?
+  createdAt      DateTime            @default(now())
+
+  conversation BotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("bot_messages")
+}
+
+// ---------------------------------------------------------------------------
+// Divers
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}

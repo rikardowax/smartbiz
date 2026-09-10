@@ -1,0 +1,62 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.3/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.next",
+      "!**/generated",
+      "!**/*.gen.ts",
+      "!**/pnpm-lock.yaml"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "useImportType": "error",
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": { "enabled": true }
+  },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/api/**/*.ts"],
+      "javascript": {
+        "parser": { "unsafeParameterDecoratorsEnabled": true }
+      },
+      "linter": {
+        "rules": {
+          "style": { "useImportType": "off" },
+          "correctness": { "noUnusedFunctionParameters": "off" }
+        }
+      }
+    }
+  ]
+}
