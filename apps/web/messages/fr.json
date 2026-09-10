@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "title": "SmartBiz — Votre commerce, simplifié",
+    "description": "Marketplace et ERP intelligent pour les commerçants africains."
+  },
+  "nav": {
+    "home": "Accueil",
+    "marketplace": "Marketplace",
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "dashboard": "Tableau de bord",
+    "assistant": "Assistant"
+  },
+  "hero": {
+    "title": "Vendez, gérez et développez votre commerce",
+    "subtitle": "SmartBiz connecte vendeurs et acheteurs et accompagne chaque commerçant avec un assistant intelligent pour gagner du temps et vendre plus.",
+    "ctaBuyer": "Découvrir le catalogue",
+    "ctaSeller": "Devenir vendeur"
+  },
+  "locale": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "next": "Suivant",
+    "back": "Retour"
+  }
+}

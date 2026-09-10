@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "title": "SmartBiz — Your business, simplified",
+    "description": "Smart marketplace and ERP for African merchants."
+  },
+  "nav": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "login": "Login",
+    "register": "Create account",
+    "dashboard": "Dashboard",
+    "assistant": "Assistant"
+  },
+  "hero": {
+    "title": "Sell, manage, and grow your business",
+    "subtitle": "SmartBiz connects buyers and sellers and helps every merchant save time and sell more with a smart assistant.",
+    "ctaBuyer": "Browse catalog",
+    "ctaSeller": "Become a seller"
+  },
+  "locale": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "close": "Close",
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back"
+  }
+}
