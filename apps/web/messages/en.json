@@ -24,6 +24,13 @@
     "fr": "Français",
     "en": "English"
   },
+  "pwa": {
+    "installTitle": "Install SmartBiz",
+    "installDescription": "Add the app to your home screen for quick access.",
+    "install": "Install",
+    "dismiss": "Dismiss",
+    "iosHint": "Tap Share, then « Add to Home Screen »."
+  },
   "auth": {
     "loginTitle": "Login",
     "loginSubtitle": "Sign in to your SmartBiz account",

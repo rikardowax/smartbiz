@@ -24,6 +24,13 @@
     "fr": "Français",
     "en": "English"
   },
+  "pwa": {
+    "installTitle": "Installer SmartBiz",
+    "installDescription": "Ajoutez l'application à votre écran d'accueil pour un accès rapide.",
+    "install": "Installer",
+    "dismiss": "Ignorer",
+    "iosHint": "Appuyez sur Partager, puis « Ajouter à l'écran d'accueil »."
+  },
   "auth": {
     "loginTitle": "Connexion",
     "loginSubtitle": "Connectez-vous à votre compte SmartBiz",

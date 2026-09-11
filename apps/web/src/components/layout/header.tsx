@@ -4,6 +4,7 @@ import { LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-re
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { PwaInstallButton } from "@/components/pwa-install-button";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
@@ -75,6 +76,8 @@ export function Header({ locale }: { locale: string }) {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <PwaInstallButton />
+
           <Button
             variant="ghost"
             size="icon"
@@ -135,6 +138,7 @@ export function Header({ locale }: { locale: string }) {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <PwaInstallButton />
           <Button
             variant="ghost"
             size="icon"

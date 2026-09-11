@@ -4,6 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { PwaInstallProvider } from "@/components/pwa-install-context";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 
 export function Providers({
   children,
@@ -22,10 +24,18 @@ export function Providers({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="Africa/Douala">
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        {children}
-        <Toaster richColors closeButton position="top-center" />
-      </ThemeProvider>
+      <PwaInstallProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster richColors closeButton position="top-center" />
+          <PwaInstallPrompt />
+        </ThemeProvider>
+      </PwaInstallProvider>
     </NextIntlClientProvider>
   );
 }
