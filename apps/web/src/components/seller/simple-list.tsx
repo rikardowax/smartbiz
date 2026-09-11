@@ -2,12 +2,14 @@
 
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { useShopList } from "@/hooks/use-shop-list";
 import { cn } from "@/lib/utils";
 
 export interface SimpleListColumn<T> {
   label: string;
-  accessor: (item: T) => string | number;
+  accessor?: (item: T) => string | number;
+  render?: (item: T) => ReactNode;
   className?: string;
 }
 
@@ -81,7 +83,11 @@ export function SimpleList<T extends { id: string }>({
                       key={col.label}
                       className={cn("px-4 py-3 text-card-foreground", col.className)}
                     >
-                      {col.accessor(item)}
+                      {col.render
+                        ? col.render(item)
+                        : col.accessor
+                          ? String(col.accessor(item))
+                          : null}
                     </td>
                   ))}
                 </tr>
