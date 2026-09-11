@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { type User, useAuthStore } from "@/stores/auth-store";
 

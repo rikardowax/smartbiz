@@ -61,6 +61,7 @@
     "registerError": "Impossible de créer le compte",
     "fieldRequired": "Ce champ est requis",
     "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordStrong": "8 caractères minimum avec au moins une lettre et un chiffre",
     "phoneInvalid": "Numéro de téléphone invalide",
     "emailInvalid": "Adresse email invalide",
     "googleLogin": "Continuer avec Google",

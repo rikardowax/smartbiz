@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,12 +18,13 @@ export default function ResetPasswordPage() {
   const t = useTranslations("auth");
   const [success, setSuccess] = useState(false);
   const phoneRegex = /^\+?[0-9]{8,15}$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
   const schema = z
     .object({
       phone: z.string().min(1, t("fieldRequired")).regex(phoneRegex, t("phoneInvalid")),
       code: z.string().min(6, t("fieldRequired")).max(6, t("fieldRequired")),
-      newPassword: z.string().min(8, t("passwordMin")),
+      newPassword: z.string().regex(passwordRegex, t("passwordStrong")),
       confirmPassword: z.string().min(1, t("fieldRequired")),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
@@ -102,9 +104,8 @@ export default function ResetPasswordPage() {
               <Label htmlFor="newPassword" required>
                 {t("newPassword")}
               </Label>
-              <Input
+              <PasswordInput
                 id="newPassword"
-                type="password"
                 autoComplete="new-password"
                 {...register("newPassword")}
                 error={errors.newPassword}
@@ -118,9 +119,8 @@ export default function ResetPasswordPage() {
               <Label htmlFor="confirmPassword" required>
                 {t("confirmPassword")}
               </Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
                 autoComplete="new-password"
                 {...register("confirmPassword")}
                 error={errors.confirmPassword}

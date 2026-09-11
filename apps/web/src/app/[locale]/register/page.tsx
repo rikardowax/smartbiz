@@ -2,16 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { GoogleLoginButton } from "@/components/auth/google-login";
+import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { type User, useAuthStore } from "@/stores/auth-store";
 
@@ -23,14 +23,21 @@ export default function RegisterPage() {
 
   const phoneRegex = /^\+?[0-9]{8,15}$/;
 
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
   const schema = z
     .object({
       firstName: z.string().min(1, t("fieldRequired")),
       lastName: z.string().min(1, t("fieldRequired")),
       phone: z.string().min(1, t("fieldRequired")).regex(phoneRegex, t("phoneInvalid")),
       email: z.union([z.literal(""), z.string().email(t("emailInvalid"))]).optional(),
-      password: z.string().min(8, t("passwordMin")),
+      password: z.string().regex(passwordRegex, t("passwordStrong")),
+      confirmPassword: z.string().min(1, t("fieldRequired")),
       role: z.enum(["ACHETEUR", "VENDEUR"]),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("passwordsMatch"),
+      path: ["confirmPassword"],
     })
     .transform((data) => ({
       ...data,
@@ -52,9 +59,10 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
+      const { confirmPassword: _, ...rest } = data;
       const payload = {
-        ...data,
-        email: data.email || undefined,
+        ...rest,
+        email: rest.email || undefined,
       };
       const res = await apiFetch<{
         accessToken: string;
@@ -154,15 +162,29 @@ export default function RegisterPage() {
             <Label htmlFor="password" required>
               {t("password")}
             </Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               autoComplete="new-password"
               {...register("password")}
               error={errors.password}
             />
             {errors.password && (
               <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="confirmPassword" required>
+              {t("confirmPassword")}
+            </Label>
+            <PasswordInput
+              id="confirmPassword"
+              autoComplete="new-password"
+              {...register("confirmPassword")}
+              error={errors.confirmPassword}
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-destructive">{errors.confirmPassword.message}</p>
             )}
           </div>
 

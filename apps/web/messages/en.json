@@ -61,6 +61,7 @@
     "registerError": "Could not create account",
     "fieldRequired": "This field is required",
     "passwordMin": "Password must be at least 8 characters",
+    "passwordStrong": "At least 8 characters with one letter and one number",
     "phoneInvalid": "Invalid phone number",
     "emailInvalid": "Invalid email address",
     "googleLogin": "Continue with Google",
