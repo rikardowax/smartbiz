@@ -1,23 +1,74 @@
 "use client";
 
-import { Loader2, Store } from "lucide-react";
+import { Loader2, Store, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { type User, useAuthStore } from "@/stores/auth-store";
+
+const DEFAULT_CITIES = [
+  "Yaoundé",
+  "Douala",
+  "Bafoussam",
+  "Bamenda",
+  "Bertoua",
+  "Buea",
+  "Ebolowa",
+  "Garoua",
+  "Kribi",
+  "Limbe",
+  "Maroua",
+  "Ngaoundéré",
+];
 
 export function CreateShopForm() {
   const t = useTranslations("erp");
+  const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [cities, setCities] = useState<string[]>(DEFAULT_CITIES);
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
+  const [interestInput, setInterestInput] = useState("");
+  const [interests, setInterests] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    apiFetch<string[]>("/shops/public/cities")
+      .then((res) => setCities(res.length ? res : DEFAULT_CITIES))
+      .catch(() => setCities(DEFAULT_CITIES));
+  }, []);
+
+  useEffect(() => {
+    apiFetch<{ name: string }[]>("/categories")
+      .then((res) => setSuggestions(res.map((c) => c.name)))
+      .catch(() => setSuggestions([]));
+  }, []);
+
+  const addInterest = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed || interests.includes(trimmed) || interests.length >= 5) return;
+    setInterests((prev) => [...prev, trimmed]);
+    setInterestInput("");
+  };
+
+  const removeInterest = (value: string) => {
+    setInterests((prev) => prev.filter((i) => i !== value));
+  };
+
+  const handleInterestKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addInterest(interestInput);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +87,7 @@ export function CreateShopForm() {
           city: city.trim(),
           description: description.trim() || undefined,
           country: "Cameroun",
+          interests: interests.length ? interests : undefined,
         }),
       });
       const me = await apiFetch<User>("/auth/me");
@@ -87,13 +139,25 @@ export function CreateShopForm() {
             <Label htmlFor="shopCity" required>
               {t("city")}
             </Label>
-            <Input
+            <select
               id="shopCity"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="Yaoundé"
               required
-            />
+              className={cn(
+                "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                !city && "text-muted-foreground",
+              )}
+            >
+              <option value="" disabled>
+                {t("selectCity")}
+              </option>
+              {cities.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -104,6 +168,55 @@ export function CreateShopForm() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("shopDescriptionPlaceholder")}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="shopInterests">
+              {t("interests")} ({interests.length}/5)
+            </Label>
+            <Input
+              id="shopInterests"
+              value={interestInput}
+              onChange={(e) => setInterestInput(e.target.value)}
+              onKeyDown={handleInterestKeyDown}
+              placeholder={t("interestsPlaceholder")}
+              disabled={interests.length >= 5}
+            />
+            {suggestions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {suggestions.slice(0, 8).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    disabled={interests.includes(s) || interests.length >= 5}
+                    onClick={() => addInterest(s)}
+                    className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    + {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            {interests.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {interests.map((i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                  >
+                    {i}
+                    <button
+                      type="button"
+                      onClick={() => removeInterest(i)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-primary/20"
+                      aria-label={t("removeInterest")}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

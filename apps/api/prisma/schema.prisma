@@ -193,6 +193,7 @@ model Shop {
   country        String     @default("Cameroun")
   city           String
   address        String?
+  interests      String[]   @default([])
   currency       String     @default("XAF")
   status         ShopStatus @default(PENDING)
   createdAt      DateTime   @default(now())

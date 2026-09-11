@@ -1,6 +1,16 @@
 "use client";
 
-import { Bot, Loader2, ShoppingBag } from "lucide-react";
+import {
+  Bot,
+  Boxes,
+  Loader2,
+  Package,
+  ShoppingBag,
+  ShoppingCart,
+  Truck,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateShopForm } from "@/components/seller/create-shop";
 import { SellerDashboard } from "@/components/seller/seller-dashboard";
@@ -26,9 +36,38 @@ export default function DashboardPage() {
       return <CreateShopForm />;
     }
 
+    const quickActions = [
+      { href: "/dashboard/products", icon: Package, label: te("products") },
+      { href: "/dashboard/stock", icon: Boxes, label: te("stock") },
+      { href: "/dashboard/orders", icon: ShoppingCart, label: te("orders") },
+      { href: "/dashboard/customers", icon: Users, label: te("customers") },
+      { href: "/dashboard/suppliers", icon: Truck, label: te("suppliers") },
+      { href: "/dashboard/finance", icon: Wallet, label: te("finance") },
+    ];
+
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-foreground">{te("overview")}</h1>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                key={action.href}
+                asChild
+                variant="outline"
+                className="h-auto flex-col gap-2 py-4"
+              >
+                <Link href={action.href}>
+                  <Icon className="h-5 w-5" />
+                  <span className="text-sm">{action.label}</span>
+                </Link>
+              </Button>
+            );
+          })}
+        </div>
+
         <SellerDashboard />
       </div>
     );

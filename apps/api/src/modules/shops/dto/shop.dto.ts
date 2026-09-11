@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import {
+  ArrayMaxSize,
+  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -69,6 +71,13 @@ export class CreateShopDto {
   @IsOptional()
   @IsUrl({ require_tld: false })
   coverUrl?: string;
+
+  @ApiPropertyOptional({ example: ["Alimentation", "Électronique"] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(5)
+  interests?: string[];
 }
 
 export class UpdateShopDto extends PartialType(CreateShopDto) {}
