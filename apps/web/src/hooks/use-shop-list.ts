@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useSellerShop } from "@/hooks/use-seller-shop";
 import { apiFetch } from "@/lib/api";
 
-export function useShopList<T>(path: string) {
+export function useShopList<T>(path: string, refetchKey = 0) {
   const t = useTranslations("erp");
   const { shopId } = useSellerShop();
   const [items, setItems] = useState<T[]>([]);
@@ -14,6 +14,7 @@ export function useShopList<T>(path: string) {
 
   useEffect(() => {
     if (!shopId) return;
+    void refetchKey;
     let cancelled = false;
     setLoading(true);
     apiFetch<{ items: T[] }>(`/shops/${shopId}${path}`)
@@ -29,7 +30,7 @@ export function useShopList<T>(path: string) {
     return () => {
       cancelled = true;
     };
-  }, [shopId, path, t]);
+  }, [shopId, path, t, refetchKey]);
 
   return { items, loading, error };
 }

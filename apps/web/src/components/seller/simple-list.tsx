@@ -15,13 +15,15 @@ export function SimpleList<T extends { id: string }>({
   path,
   title,
   columns,
+  refetchKey = 0,
 }: {
   path: string;
   title: string;
   columns: SimpleListColumn<T>[];
+  refetchKey?: number;
 }) {
   const t = useTranslations("erp");
-  const { items, loading, error } = useShopList<T>(path);
+  const { items, loading, error } = useShopList<T>(path, refetchKey);
 
   if (loading) {
     return (
