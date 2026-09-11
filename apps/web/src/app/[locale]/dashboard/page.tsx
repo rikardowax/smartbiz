@@ -1,7 +1,8 @@
 "use client";
 
-import { Bot, Loader2, ShoppingBag, Store } from "lucide-react";
+import { Bot, Loader2, ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { CreateShopForm } from "@/components/seller/create-shop";
 import { SellerDashboard } from "@/components/seller/seller-dashboard";
 import { Button } from "@/components/ui/button";
 import { useSellerShop } from "@/hooks/use-seller-shop";
@@ -22,14 +23,7 @@ export default function DashboardPage() {
 
   if (isSeller) {
     if (!hasShop) {
-      return (
-        <div className="mx-auto max-w-xl p-8 text-center">
-          <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
-            <Store className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h1 className="mt-4 text-xl font-bold text-card-foreground">{te("noShop")}</h1>
-          </div>
-        </div>
-      );
+      return <CreateShopForm />;
     }
 
     return (
