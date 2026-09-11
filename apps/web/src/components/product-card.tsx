@@ -46,7 +46,7 @@ export function ProductCard({
 }) {
   const [imageError, setImageError] = useState(false);
   const image = product.images?.[0];
-  const isPlaceholder = !image || image.includes("picsum.photos");
+  const isPlaceholder = !image;
   const discounted = product.compareAtPrice && product.compareAtPrice > product.price;
   const productHref = `/products/${product.shop.slug}/${product.slug}`;
 
