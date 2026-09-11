@@ -178,10 +178,9 @@ export class ShopsService {
     const rows = await this.prisma.shop.groupBy({
       by: ["city"],
       where: { status: ShopStatus.ACTIVE },
-      _count: { city: true },
       orderBy: { _count: { city: "desc" } },
     });
-    return rows.map((row) => ({ city: row.city, shopCount: row._count.city }));
+    return rows.map((row) => row.city);
   }
 
   // --- Administration ------------------------------------------------------
