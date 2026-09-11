@@ -82,6 +82,14 @@
     "shops": "My shops",
     "noShops": "You don't have a shop yet. Create one to start selling."
   },
+  "assistant": {
+    "title": "SmartBiz Assistant",
+    "subtitle": "Ask questions or request actions on your shop.",
+    "greeting": "Hello! I can help you check your dashboard, products, stock, customers or create records. What would you like to do?",
+    "placeholder": "E.g. which products are out of stock?",
+    "thinking": "The assistant is thinking...",
+    "error": "Something went wrong."
+  },
   "erp": {
     "dashboard": "Dashboard",
     "products": "Products",

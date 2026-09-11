@@ -82,6 +82,14 @@
     "shops": "Mes boutiques",
     "noShops": "Vous n'avez pas encore de boutique. Créez-en une pour commencer à vendre."
   },
+  "assistant": {
+    "title": "Assistant SmartBiz",
+    "subtitle": "Posez des questions ou demandez des actions sur votre boutique.",
+    "greeting": "Bonjour ! Je peux vous aider à consulter votre tableau de bord, vos produits, stock, clients ou créer des fiches. Que souhaitez-vous faire ?",
+    "placeholder": "Exemple : quels sont mes produits en rupture ?",
+    "thinking": "L'assistant réfléchit...",
+    "error": "Une erreur est survenue."
+  },
   "erp": {
     "dashboard": "Tableau de bord",
     "products": "Produits",
