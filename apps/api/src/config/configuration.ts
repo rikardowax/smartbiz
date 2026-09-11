@@ -97,6 +97,9 @@ export const configuration = () => {
       apiKey: process.env.GEMINI_API_KEY ?? "",
       model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
     },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+    },
   };
 };
 

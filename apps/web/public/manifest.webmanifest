@@ -1,0 +1,20 @@
+{
+  "name": "SmartBiz",
+  "short_name": "SmartBiz",
+  "description": "Marketplace and smart ERP for African merchants",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0F766E",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

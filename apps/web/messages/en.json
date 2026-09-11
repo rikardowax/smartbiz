@@ -55,7 +55,21 @@
     "fieldRequired": "This field is required",
     "passwordMin": "Password must be at least 8 characters",
     "phoneInvalid": "Invalid phone number",
-    "emailInvalid": "Invalid email address"
+    "emailInvalid": "Invalid email address",
+    "googleLogin": "Continue with Google",
+    "orContinueWith": "or",
+    "forgotTitle": "Forgot password",
+    "forgotSubtitle": "Enter your phone number to receive a reset code.",
+    "sendCode": "Send code",
+    "forgotSent": "If this number exists, a code has been sent.",
+    "resetTitle": "New password",
+    "resetSubtitle": "Enter the code you received and your new password.",
+    "resetCode": "Code",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "submitReset": "Reset",
+    "resetSuccess": "Password updated. Please log in.",
+    "passwordsMatch": "Passwords must match"
   },
   "marketplace": {
     "title": "Marketplace",

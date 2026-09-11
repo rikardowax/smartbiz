@@ -9,6 +9,7 @@ import { AuthService, type RequestContext } from "./auth.service.js";
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
+  GoogleLoginDto,
   LoginDto,
   RefreshTokenDto,
   RegisterDto,
@@ -35,6 +36,15 @@ export class AuthController {
   @ApiOperation({ summary: "Se connecter avec un téléphone ou un e-mail" })
   login(@Body() dto: LoginDto, @Req() request: Request) {
     return this.authService.login(dto, requestContext(request));
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 8, ttl: 60_000 } })
+  @Post("google")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Se connecter avec Google" })
+  google(@Body() dto: GoogleLoginDto, @Req() request: Request) {
+    return this.authService.googleLogin(dto, requestContext(request));
   }
 
   @Public()

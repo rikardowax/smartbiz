@@ -4,11 +4,13 @@ import {
   ConflictException,
   Injectable,
   Logger,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
+import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import type {
   AuthenticatedUser,
   JwtAccessPayload,
@@ -20,6 +22,7 @@ import { PrismaService } from "../../prisma/prisma.service.js";
 import type {
   ChangePasswordDto,
   ForgotPasswordDto,
+  GoogleLoginDto,
   LoginDto,
   RegisterDto,
   ResetPasswordDto,
@@ -93,6 +96,68 @@ export class AuthService {
     if (!user || !passwordMatches) {
       throw new UnauthorizedException("Identifiants incorrects");
     }
+    if (!user.isActive) {
+      throw new UnauthorizedException("Ce compte a été désactivé");
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    const tokens = await this.issueTokens(user, context);
+    return { user: toPublicUser(user), ...tokens };
+  }
+
+  async googleLogin(dto: GoogleLoginDto, context: RequestContext = {}) {
+    const clientId = this.config.get<string>("google.clientId");
+    if (!clientId) {
+      throw new ServiceUnavailableException("GOOGLE_CLIENT_ID non configuré");
+    }
+
+    const client = new OAuth2Client(clientId);
+    let payload: TokenPayload | undefined;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: dto.credential,
+        audience: clientId,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException("Token Google invalide");
+    }
+
+    if (!payload) {
+      throw new UnauthorizedException("Token Google invalide");
+    }
+
+    const email = payload.email?.toLowerCase() ?? null;
+    const sub = payload.sub;
+    const firstName = payload.given_name ?? payload.name ?? "";
+    const lastName = payload.family_name ?? "";
+    const phone = `google_${sub}`;
+
+    const where: { phone?: string; email?: string }[] = [{ phone }];
+    if (email) where.push({ email });
+
+    let user = await this.prisma.user.findFirst({
+      where: { OR: where },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          phone,
+          email,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          passwordHash: await bcrypt.hash(randomUUID(), BCRYPT_ROUNDS),
+          role: Role.ACHETEUR,
+          avatarUrl: payload.picture ?? null,
+        },
+      });
+    }
+
     if (!user.isActive) {
       throw new UnauthorizedException("Ce compte a été désactivé");
     }

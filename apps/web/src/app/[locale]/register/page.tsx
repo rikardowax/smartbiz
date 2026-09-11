@@ -84,7 +84,9 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">{t("firstName")}</Label>
+              <Label htmlFor="firstName" required>
+                {t("firstName")}
+              </Label>
               <Input
                 id="firstName"
                 autoComplete="given-name"
@@ -96,7 +98,9 @@ export default function RegisterPage() {
               )}
             </div>
             <div>
-              <Label htmlFor="lastName">{t("lastName")}</Label>
+              <Label htmlFor="lastName" required>
+                {t("lastName")}
+              </Label>
               <Input
                 id="lastName"
                 autoComplete="family-name"
@@ -110,7 +114,9 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <Label htmlFor="phone">{t("phone")}</Label>
+            <Label htmlFor="phone" required>
+              {t("phone")}
+            </Label>
             <Input
               id="phone"
               type="tel"
@@ -140,7 +146,9 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <Label htmlFor="password">{t("password")}</Label>
+            <Label htmlFor="password" required>
+              {t("password")}
+            </Label>
             <Input
               id="password"
               type="password"

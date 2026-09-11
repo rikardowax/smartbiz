@@ -73,6 +73,13 @@ export class RefreshTokenDto {
   refreshToken: string;
 }
 
+export class GoogleLoginDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  credential: string;
+}
+
 export class ForgotPasswordDto {
   @ApiProperty({ example: "+237699000001" })
   @Transform(normalizePhone)

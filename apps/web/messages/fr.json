@@ -55,7 +55,21 @@
     "fieldRequired": "Ce champ est requis",
     "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
     "phoneInvalid": "Numéro de téléphone invalide",
-    "emailInvalid": "Adresse email invalide"
+    "emailInvalid": "Adresse email invalide",
+    "googleLogin": "Continuer avec Google",
+    "orContinueWith": "ou",
+    "forgotTitle": "Mot de passe oublié",
+    "forgotSubtitle": "Entrez votre numéro de téléphone pour recevoir un code de réinitialisation.",
+    "sendCode": "Recevoir le code",
+    "forgotSent": "Si ce numéro existe, un code a été envoyé.",
+    "resetTitle": "Nouveau mot de passe",
+    "resetSubtitle": "Saisissez le code reçu et votre nouveau mot de passe.",
+    "resetCode": "Code",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "submitReset": "Réinitialiser",
+    "resetSuccess": "Mot de passe mis à jour. Connectez-vous.",
+    "passwordsMatch": "Les mots de passe doivent correspondre"
   },
   "marketplace": {
     "title": "Marketplace",

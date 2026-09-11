@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { GoogleLoginButton } from "@/components/auth/google-login";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,7 +66,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="identifier">{t("identifier")}</Label>
+            <Label htmlFor="identifier" required>
+              {t("identifier")}
+            </Label>
             <Input
               id="identifier"
               placeholder={t("identifierPlaceholder")}
@@ -79,7 +82,17 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <Label htmlFor="password">{t("password")}</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" required>
+                {t("password")}
+              </Label>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                {t("forgotPassword")}
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
@@ -97,6 +110,14 @@ export default function LoginPage() {
             {t("submitLogin")}
           </Button>
         </form>
+
+        <div className="my-6 flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">{t("orContinueWith")}</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleLoginButton />
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
           {t("noAccount")}{" "}

@@ -22,6 +22,20 @@ export interface CatalogProduct {
   shop: { name: string; slug: string; city: string };
 }
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
+function colorFromString(str: string) {
+  const hue = [...str].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+  return `hsl(${hue} 70% 90%)`;
+}
+
 export function ProductCard({
   product,
   addToCart,
@@ -31,12 +45,13 @@ export function ProductCard({
 }) {
   const [imageError, setImageError] = useState(false);
   const image = product.images?.[0];
+  const isPlaceholder = !image || image.includes("picsum.photos");
   const discounted = product.compareAtPrice && product.compareAtPrice > product.price;
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="relative aspect-square overflow-hidden bg-muted">
-        {!imageError && image ? (
+        {!imageError && !isPlaceholder ? (
           <Image
             src={image}
             alt={product.name}
@@ -48,8 +63,12 @@ export function ProductCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted text-muted-foreground">
-            <Package className="h-12 w-12 opacity-50" />
+          <div
+            className="flex h-full w-full flex-col items-center justify-center text-foreground"
+            style={{ backgroundColor: colorFromString(product.category?.name ?? product.name) }}
+          >
+            <span className="text-3xl font-bold">{initials(product.name)}</span>
+            <Package className="mt-2 h-6 w-6 opacity-40" />
           </div>
         )}
       </div>

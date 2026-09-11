@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
@@ -16,6 +16,7 @@ export function Header({ locale }: { locale: string }) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
   const otherLocale = locale === "fr" ? "en" : "fr";
   const { isAuthenticated, user, logout } = useAuthStore();
 
@@ -84,13 +85,13 @@ export function Header({ locale }: { locale: string }) {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
-          <Link
-            href={pathname}
-            locale={otherLocale}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          <button
+            type="button"
+            onClick={() => router.replace(pathname, { locale: otherLocale })}
+            className="text-sm font-medium uppercase text-muted-foreground hover:text-foreground"
           >
-            {otherLocale.toUpperCase()}
-          </Link>
+            {otherLocale}
+          </button>
 
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
