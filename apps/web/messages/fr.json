@@ -10,6 +10,7 @@
     "register": "Créer un compte",
     "dashboard": "Tableau de bord",
     "assistant": "Assistant",
+    "salesbot": "SalesBot",
     "logout": "Déconnexion"
   },
   "hero": {
@@ -89,6 +90,30 @@
     "placeholder": "Exemple : quels sont mes produits en rupture ?",
     "thinking": "L'assistant réfléchit...",
     "error": "Une erreur est survenue."
+  },
+  "salesbot": {
+    "title": "SalesBot",
+    "subtitle": "Simulateur WhatsApp",
+    "online": "en ligne",
+    "placeholder": "Écrivez un message...",
+    "welcome": "Bonjour ! Je suis le SalesBot WhatsApp de SmartBiz. Tapez *catalogue* pour voir les produits, *panier* pour voir votre panier ou *commander* pour finaliser.",
+    "catalogue": "Catalogue",
+    "cart": "Panier",
+    "order": "Commander",
+    "add": "Ajouter",
+    "confirmed": "✅ Commande simulée confirmée ! Total : {total} FCFA. Merci pour votre confiance.",
+    "emptyCart": "Votre panier est vide.",
+    "cartTotal": "Total : {total} FCFA",
+    "askName": "Quel est le nom du destinataire ?",
+    "askPhone": "Quel est son numéro de téléphone ?",
+    "askCity": "Quelle est la ville de livraison ?",
+    "askAddress": "Quelle est l'adresse de livraison ?",
+    "confirmOrder": "Confirmer",
+    "cancelOrder": "Annuler",
+    "restart": "Recommencer",
+    "noProducts": "Je n'ai trouvé aucun produit. Essayez un autre mot.",
+    "chooseProduct": "Choisissez un produit en tapant son numéro ou cliquez sur un bouton.",
+    "addedToCart": "{name} ajouté au panier."
   },
   "erp": {
     "dashboard": "Tableau de bord",

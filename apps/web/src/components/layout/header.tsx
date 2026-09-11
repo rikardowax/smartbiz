@@ -27,6 +27,7 @@ export function Header({ locale }: { locale: string }) {
     { href: "/marketplace", label: t("marketplace") },
     { href: "/dashboard", label: t("dashboard") },
     { href: "/assistant", label: t("assistant") },
+    { href: "/salesbot", label: t("salesbot") },
   ];
 
   const handleLogout = async () => {

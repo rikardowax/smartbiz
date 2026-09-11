@@ -10,6 +10,7 @@
     "register": "Create account",
     "dashboard": "Dashboard",
     "assistant": "Assistant",
+    "salesbot": "SalesBot",
     "logout": "Logout"
   },
   "hero": {
@@ -89,6 +90,30 @@
     "placeholder": "E.g. which products are out of stock?",
     "thinking": "The assistant is thinking...",
     "error": "Something went wrong."
+  },
+  "salesbot": {
+    "title": "SalesBot",
+    "subtitle": "WhatsApp Simulator",
+    "online": "online",
+    "placeholder": "Type a message...",
+    "welcome": "Hello! I'm the SmartBiz WhatsApp SalesBot. Type *catalog* to see products, *cart* for your cart, or *order* to checkout.",
+    "catalogue": "Catalog",
+    "cart": "Cart",
+    "order": "Order",
+    "add": "Add",
+    "confirmed": "✅ Simulated order confirmed! Total: {total} FCFA. Thank you.",
+    "emptyCart": "Your cart is empty.",
+    "cartTotal": "Total: {total} FCFA",
+    "askName": "What is the recipient's name?",
+    "askPhone": "What is their phone number?",
+    "askCity": "What is the delivery city?",
+    "askAddress": "What is the delivery address?",
+    "confirmOrder": "Confirm",
+    "cancelOrder": "Cancel",
+    "restart": "Restart",
+    "noProducts": "No products found. Try another word.",
+    "chooseProduct": "Choose a product by typing its number or clicking a button.",
+    "addedToCart": "{name} added to cart."
   },
   "erp": {
     "dashboard": "Dashboard",
