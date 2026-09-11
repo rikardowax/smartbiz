@@ -32,6 +32,12 @@ services:
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
       - key: GOOGLE_CLIENT_ID
+      - key: WHATSAPP_TOKEN
+      - key: WHATSAPP_PHONE_NUMBER_ID
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: smartbiz-verify-token
+      - key: WHATSAPP_API_VERSION
+        value: v20.0
 
   - type: web
     name: smartbiz-web
