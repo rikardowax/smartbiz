@@ -29,17 +29,13 @@ export function Header({ locale }: { locale: string }) {
   }, []);
 
   const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
+  const showCart = !isSeller;
 
   const links = [
     { href: "/marketplace", label: t("marketplace") },
     { href: isSeller ? "/dashboard/shops" : "/shops", label: isSeller ? t("myShops") : t("shops") },
     { href: "/dashboard", label: t("dashboard") },
-    ...(isSeller
-      ? [
-          { href: "/assistant", label: t("assistant") },
-          { href: "/salesbot", label: t("salesbot") },
-        ]
-      : []),
+    ...(isSeller ? [{ href: "/salesbot", label: t("salesbot") }] : []),
   ];
 
   const handleLogout = async () => {
@@ -108,17 +104,19 @@ export function Header({ locale }: { locale: string }) {
 
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <Link
-                href="/cart"
-                className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </Link>
+              {showCart && (
+                <Link
+                  href="/cart"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                      {cartCount > 9 ? "9+" : cartCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                 {initials || <User className="h-4 w-4" />}
@@ -136,17 +134,19 @@ export function Header({ locale }: { locale: string }) {
             </div>
           ) : (
             <>
-              <Link
-                href="/cart"
-                className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </Link>
+              {showCart && (
+                <Link
+                  href="/cart"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                      {cartCount > 9 ? "9+" : cartCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               <Button asChild variant="outline" size="sm">
                 <Link href="/login">{t("login")}</Link>
@@ -161,17 +161,19 @@ export function Header({ locale }: { locale: string }) {
 
         <div className="flex items-center gap-2 md:hidden">
           <PwaInstallButton />
-          <Link
-            href="/cart"
-            className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {cartCount > 9 ? "9+" : cartCount}
-              </span>
-            )}
-          </Link>
+          {showCart && (
+            <Link
+              href="/cart"
+              className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </Link>
+          )}
           <Button
             variant="ghost"
             size="icon"
