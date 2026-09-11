@@ -18,6 +18,7 @@ export default function LoginPage() {
   const t = useTranslations("auth");
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setUser = useAuthStore((s) => s.setUser);
 
   const schema = z.object({
     identifier: z.string().min(1, t("fieldRequired")),
@@ -45,6 +46,8 @@ export default function LoginPage() {
         body: JSON.stringify(data),
       });
       setAuth(res);
+      const me = await apiFetch<User>("/auth/me");
+      setUser(me);
       toast.success(t("loginSuccess"));
       router.push("/dashboard");
     } catch (err: unknown) {

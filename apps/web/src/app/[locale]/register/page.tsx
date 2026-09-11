@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const t = useTranslations("auth");
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setUser = useAuthStore((s) => s.setUser);
 
   const phoneRegex = /^\+?[0-9]{8,15}$/;
 
@@ -63,6 +64,8 @@ export default function RegisterPage() {
         body: JSON.stringify(payload),
       });
       setAuth(res);
+      const me = await apiFetch<User>("/auth/me");
+      setUser(me);
       toast.success(t("registerSuccess"));
       router.push("/dashboard");
     } catch (err: unknown) {

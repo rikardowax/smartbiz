@@ -1,32 +1,58 @@
 "use client";
 
-import { Bot, ShoppingBag, Store } from "lucide-react";
+import { Bot, Loader2, ShoppingBag, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { SellerDashboard } from "@/components/seller/seller-dashboard";
 import { Button } from "@/components/ui/button";
+import { useSellerShop } from "@/hooks/use-seller-shop";
 import { Link } from "@/i18n/navigation";
-import { useAuthStore } from "@/stores/auth-store";
 
 export default function DashboardPage() {
+  const { user, isSeller, hasShop, isLoading } = useSellerShop();
   const t = useTranslations("dashboard");
-  const { user } = useAuthStore();
+  const te = useTranslations("erp");
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isSeller) {
+    if (!hasShop) {
+      return (
+        <div className="mx-auto max-w-xl p-8 text-center">
+          <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
+            <Store className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h1 className="mt-4 text-xl font-bold text-card-foreground">{te("noShop")}</h1>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">{te("overview")}</h1>
+        <SellerDashboard />
+      </div>
+    );
+  }
 
   const displayName =
     user && (user.firstName || user.lastName)
       ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
       : (user?.phone ?? "");
 
-  const isSeller = user?.role === "VENDEUR";
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="rounded-2xl bg-brand-gradient p-8 text-white shadow-lg">
         <h1 className="text-3xl font-bold">{t("welcome", { name: displayName })}</h1>
-        <p className="mt-2 text-primary-foreground/90">
-          {isSeller ? t("subtitleSeller") : t("subtitleBuyer")}
-        </p>
+        <p className="mt-2 text-primary-foreground/90">{t("subtitleBuyer")}</p>
       </div>
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
         <ActionCard
           icon={ShoppingBag}
           title="Marketplace"
@@ -41,19 +67,6 @@ export default function DashboardPage() {
           href="/assistant"
           cta={t("openAssistant")}
         />
-        {isSeller && (
-          <ActionCard
-            icon={Store}
-            title={t("shops")}
-            description={
-              user?.shops && user.shops.length > 0
-                ? user.shops.map((s) => s.name).join(", ")
-                : t("noShops")
-            }
-            href="/dashboard"
-            cta="—"
-          />
-        )}
       </div>
     </div>
   );
