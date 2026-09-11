@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "@smartbiz/api",
   "version": "0.1.0",
   "description": "SmartBiz API — marketplace, ERP et agents IA",
