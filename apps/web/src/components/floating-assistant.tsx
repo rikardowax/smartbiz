@@ -1,8 +1,9 @@
 "use client";
 
-import { Bot, Loader2, MessageSquare, Send, User, X } from "lucide-react";
+import { Bot, Loader2, Send, User, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
@@ -12,6 +13,24 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   text: string;
+}
+
+function playBeep() {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch {
+    // ignore
+  }
 }
 
 export function FloatingAssistant() {
@@ -25,6 +44,22 @@ export function FloatingAssistant() {
     { id: crypto.randomUUID(), role: "assistant", text: t("greeting") },
   ]);
   const [loading, setLoading] = useState(false);
+  const prevCount = useRef(messages.length);
+
+  useEffect(() => {
+    if (messages.length > prevCount.current) {
+      const last = messages[messages.length - 1];
+      if (last.role === "assistant") {
+        playBeep();
+        if (!open) {
+          toast.info(t("newAssistantMessage"), {
+            action: { label: t("openChat"), onClick: () => setOpen(true) },
+          });
+        }
+      }
+    }
+    prevCount.current = messages.length;
+  }, [messages, open, t]);
 
   if (!isSeller) return null;
 
@@ -58,11 +93,11 @@ export function FloatingAssistant() {
     <>
       <Button
         size="icon"
-        className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg"
+        className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full border-2 border-white/20 bg-brand-gradient text-white shadow-xl ring-2 ring-primary/20 transition-all hover:scale-105 hover:opacity-95 active:scale-95"
         onClick={() => setOpen((s) => !s)}
         aria-label={t("title")}
       >
-        {open ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+        {open ? <X className="h-6 w-6" /> : <Bot className="h-6 w-6" />}
       </Button>
 
       {open && (

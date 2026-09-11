@@ -56,7 +56,7 @@ interface Checkout {
 export default function SalesBotPage() {
   const t = useTranslations("salesbot");
   const { user } = useAuthStore();
-  const isSeller = user?.role === "SELLER" || user?.role === "ADMIN";
+  const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>(() => [
     {

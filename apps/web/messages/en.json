@@ -141,6 +141,8 @@
     "placeholder": "E.g. which products are out of stock?",
     "thinking": "The assistant is thinking...",
     "error": "Something went wrong.",
+    "newAssistantMessage": "New message from the assistant",
+    "openChat": "Open",
     "sellerOnly": "Assistant reserved for sellers",
     "createShopToUseAssistant": "Create a shop from the dashboard to use the assistant.",
     "openDashboard": "Open dashboard"

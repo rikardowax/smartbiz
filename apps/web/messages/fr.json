@@ -141,6 +141,8 @@
     "placeholder": "Exemple : quels sont mes produits en rupture ?",
     "thinking": "L'assistant réfléchit...",
     "error": "Une erreur est survenue.",
+    "newAssistantMessage": "Nouveau message de l'assistant",
+    "openChat": "Ouvrir",
     "sellerOnly": "Assistant réservé aux vendeurs",
     "createShopToUseAssistant": "Créez une boutique depuis le tableau de bord pour utiliser l'assistant.",
     "openDashboard": "Ouvrir le tableau de bord"
