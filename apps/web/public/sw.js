@@ -20,9 +20,7 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cached) => {
       return (
         cached ||
-        fetch(event.request).catch(() =>
-          caches.match(event.request.url.replace(/^.*$/, "/")),
-        )
+        fetch(event.request).catch(() => caches.match(event.request.url.replace(/^.*$/, "/")))
       );
     }),
   );
