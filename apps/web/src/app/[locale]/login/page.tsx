@@ -57,8 +57,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-8 shadow-lg">
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden p-4">
+      <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-primary/15 blur-3xl animate-float" />
+      <div className="absolute -bottom-24 -right-24 h-[28rem] w-[28rem] rounded-full bg-accent/15 blur-3xl animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl animate-pulse" />
+
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up rounded-2xl border border-border/60 bg-card/95 p-8 shadow-2xl backdrop-blur-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-card-foreground">{t("loginTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("loginSubtitle")}</p>

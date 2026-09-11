@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { GoogleLoginButton } from "@/components/auth/google-login";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,8 +75,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-8 shadow-lg">
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden p-4">
+      <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-primary/15 blur-3xl animate-float" />
+      <div className="absolute -bottom-24 -right-24 h-[28rem] w-[28rem] rounded-full bg-accent/15 blur-3xl animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl animate-pulse" />
+
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up rounded-2xl border border-border/60 bg-card/95 p-8 shadow-2xl backdrop-blur-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-card-foreground">{t("registerTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("registerSubtitle")}</p>
@@ -181,6 +186,14 @@ export default function RegisterPage() {
             {t("submitRegister")}
           </Button>
         </form>
+
+        <div className="my-6 flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">{t("orContinueWith")}</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleLoginButton />
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
           {t("hasAccount")}{" "}
