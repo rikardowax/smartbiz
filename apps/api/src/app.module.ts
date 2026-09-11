@@ -12,6 +12,7 @@ import { CategoriesModule } from "./modules/categories/categories.module.js";
 import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
 import { FinanceModule } from "./modules/finance/finance.module.js";
 import { OrdersModule } from "./modules/orders/orders.module.js";
+import { SalesbotModule } from "./modules/salesbot/salesbot.module.js";
 import { PartnersModule } from "./modules/partners/partners.module.js";
 import { ProductsModule } from "./modules/products/products.module.js";
 import { ShopsModule } from "./modules/shops/shops.module.js";
@@ -38,6 +39,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     FinanceModule,
     DashboardModule,
     AssistantModule,
+    SalesbotModule,
   ],
   controllers: [AppController],
   providers: [

@@ -48,6 +48,22 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   GEMINI_MODEL?: string;
+
+  @IsOptional()
+  @IsString()
+  WHATSAPP_TOKEN?: string;
+
+  @IsOptional()
+  @IsString()
+  WHATSAPP_PHONE_NUMBER_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  WHATSAPP_VERIFY_TOKEN?: string;
+
+  @IsOptional()
+  @IsString()
+  WHATSAPP_API_VERSION?: string;
 }
 
 /**
@@ -99,6 +115,12 @@ export const configuration = () => {
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+    },
+    whatsapp: {
+      token: process.env.WHATSAPP_TOKEN ?? "",
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID ?? "",
+      verifyToken: process.env.WHATSAPP_VERIFY_TOKEN ?? "",
+      apiVersion: process.env.WHATSAPP_API_VERSION ?? "v20.0",
     },
   };
 };
