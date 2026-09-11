@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin, Package, Plus } from "lucide-react";
-import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -44,78 +44,92 @@ export function ProductCard({
   product: CatalogProduct;
   addToCart?: () => void;
 }) {
+  const t = useTranslations("marketplace");
   const [imageError, setImageError] = useState(false);
   const image = product.images?.[0];
-  const isPlaceholder = !image;
+  const isPlaceholder = !image || imageError;
   const discounted = product.compareAtPrice && product.compareAtPrice > product.price;
   const productHref = `/products/${product.shop.slug}/${product.slug}`;
+  const shopHref = `/shops/${product.shop.slug}`;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart?.();
+  };
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <Link href={productHref} className="relative aspect-square overflow-hidden bg-muted">
-        {!imageError && !isPlaceholder ? (
-          <Image
-            src={image}
-            alt={product.name}
-            fill
-            unoptimized
-            loading="lazy"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div
-            className="flex h-full w-full flex-col items-center justify-center text-foreground"
-            style={{ backgroundColor: colorFromString(product.category?.name ?? product.name) }}
-          >
-            <span className="text-3xl font-bold">{initials(product.name)}</span>
-            <Package className="mt-2 h-6 w-6 opacity-40" />
-          </div>
-        )}
-      </Link>
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <Link href={productHref} className="absolute inset-0 z-0" aria-label={product.name} />
 
-      <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs text-muted-foreground">
-          {product.category.name} ·{" "}
-          <Link href={`/shops/${product.shop.slug}`} className="hover:underline">
-            {product.shop.name}
-          </Link>
-        </p>
-        <Link href={productHref}>
+      <div className="relative z-10 flex flex-col">
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          {!isPlaceholder ? (
+            // biome-ignore lint/performance/noImgElement: external product images from sellers
+            <img
+              src={image}
+              alt={product.name}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div
+              className="flex h-full w-full flex-col items-center justify-center text-foreground"
+              style={{ backgroundColor: colorFromString(product.category?.name ?? product.name) }}
+            >
+              <span className="text-3xl font-bold">{initials(product.name)}</span>
+              <Package className="mt-2 h-6 w-6 opacity-40" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-1 flex-col p-4">
+          <p className="text-xs text-muted-foreground">
+            {product.category.name} ·{" "}
+            <Link
+              href={shopHref}
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-20 hover:underline"
+            >
+              {product.shop.name}
+            </Link>
+          </p>
           <h3 className="mt-1 line-clamp-2 font-semibold text-card-foreground transition-colors group-hover:text-primary">
             {product.name}
           </h3>
-        </Link>
-        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
 
-        <div className="mt-3 flex items-end justify-between gap-3">
-          <div>
-            <span className="text-lg font-bold text-primary">
-              {product.price.toLocaleString()} FCFA
-            </span>
-            {discounted && (
-              <span className="ml-2 text-sm text-muted-foreground line-through">
-                {product.compareAtPrice!.toLocaleString()} FCFA
+          <div className="mt-3 flex items-end justify-between gap-3">
+            <div>
+              <span className="text-lg font-bold text-primary">
+                {product.price.toLocaleString()} FCFA
               </span>
-            )}
+              {discounted && (
+                <span className="ml-2 text-sm text-muted-foreground line-through">
+                  {product.compareAtPrice!.toLocaleString()} FCFA
+                </span>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAddToCart}
+              disabled={!addToCart || product.stockQuantity <= 0}
+              title={product.stockQuantity > 0 ? t("addToCart") : t("outOfStock")}
+              className="relative z-20"
+            >
+              {product.stockQuantity > 0 ? <Plus className="h-4 w-4" /> : "—"}
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={addToCart}
-            disabled={!addToCart || product.stockQuantity <= 0}
-          >
-            {product.stockQuantity > 0 ? <Plus className="h-4 w-4" /> : "—"}
-          </Button>
-        </div>
 
-        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {product.shop.city}
-          </span>
-          <span>{product.soldCount} sold</span>
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {product.shop.city}
+            </span>
+            <span>{product.soldCount} sold</span>
+          </div>
         </div>
       </div>
     </div>

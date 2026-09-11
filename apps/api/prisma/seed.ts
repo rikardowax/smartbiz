@@ -27,6 +27,11 @@ const isFulfilled = (status: OrderStatus) =>
   status === OrderStatus.SHIPPED || status === OrderStatus.DELIVERED;
 const image = (seed: string) => `https://picsum.photos/seed/${seed}/900/900`;
 
+const productImage = (name: string, category: string, seed: string, index: number) => {
+  const prompt = `professional product photography of ${name}, ${category}, clean white background, e-commerce style, centered, soft shadows`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=900&height=900&nologo=true&seed=${seed}-${index}`;
+};
+
 /** Décale une date de N jours dans le passé. */
 const daysAgo = (days: number, hour = 10) => {
   const date = new Date();
@@ -421,7 +426,7 @@ async function main() {
           costPrice: seed.costPrice,
           stockQuantity: seed.stock,
           lowStockThreshold: 5,
-          images: [image(`${slug}-1`), image(`${slug}-2`)],
+          images: [productImage(seed.name, seed.category, slug, 1), productImage(seed.name, seed.category, slug, 2)],
           status: ProductStatus.ACTIVE,
           isFeatured: seed.featured ?? false,
           soldCount: seed.sold ?? 0,

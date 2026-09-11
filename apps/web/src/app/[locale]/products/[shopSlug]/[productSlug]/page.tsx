@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2, MapPin, MessageCircle, Minus, Plus, ShoppingCart, Store } from "lucide-react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -116,14 +115,8 @@ export default function ProductDetailPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="relative aspect-square overflow-hidden rounded-2xl border border-border/60 bg-muted">
           {image ? (
-            <Image
-              src={image}
-              alt={product.name}
-              fill
-              unoptimized
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
+            // biome-ignore lint/performance/noImgElement: external product images from sellers
+            <img src={image} alt={product.name} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
               <span className="text-4xl font-bold">{product.name.slice(0, 2).toUpperCase()}</span>

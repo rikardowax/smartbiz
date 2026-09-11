@@ -1,7 +1,6 @@
 "use client";
 
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -53,13 +52,11 @@ export default function CartPage() {
                 <div key={item.productId} className="flex items-center gap-4 py-4">
                   <div className="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
                     {item.image ? (
-                      <Image
+                      // biome-ignore lint/performance/noImgElement: external product images from sellers
+                      <img
                         src={item.image}
                         alt={item.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                        sizes="80px"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-primary/10 text-xs font-bold text-primary">
