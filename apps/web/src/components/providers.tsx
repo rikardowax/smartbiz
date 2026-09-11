@@ -1,11 +1,11 @@
 "use client";
 
 import { NextIntlClientProvider } from "next-intl";
-import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { PwaInstallProvider } from "@/components/pwa-install-context";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export function Providers({
   children,
