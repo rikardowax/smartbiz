@@ -34,7 +34,7 @@ export default async function LocaleLayout({
     <Providers locale={locale} messages={messages}>
       <div className="relative flex min-h-full flex-col">
         <Header locale={locale} />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 animate-fade-in-up">{children}</main>
       </div>
     </Providers>
   );

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -23,6 +24,8 @@ declare global {
   }
 }
 
+const GIS_SCRIPT_ID = "google-gis-script";
+
 export function GoogleLoginButton() {
   const t = useTranslations("auth");
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -30,17 +33,14 @@ export function GoogleLoginButton() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const setUser = useAuthStore((s) => s.setUser);
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!clientId || !buttonRef.current) return;
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    const theme = resolvedTheme === "dark" ? "filled_black" : "outline";
 
-    script.onload = () => {
+    const render = () => {
       if (!window.google || !buttonRef.current) return;
 
       window.google.accounts.id.initialize({
@@ -66,17 +66,40 @@ export function GoogleLoginButton() {
         },
       });
 
+      buttonRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(buttonRef.current, {
-        theme: "outline",
+        theme,
         size: "large",
         width: "100%",
       });
     };
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [clientId, router, setAuth, setUser, t]);
+    if (window.google) {
+      render();
+      return;
+    }
+
+    const existing = document.getElementById(GIS_SCRIPT_ID) as HTMLScriptElement | null;
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        render();
+      } else {
+        existing.addEventListener("load", render);
+      }
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = GIS_SCRIPT_ID;
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "true";
+      render();
+    });
+    document.body.appendChild(script);
+  }, [clientId, resolvedTheme, router, setAuth, setUser, t]);
 
   if (!clientId) {
     return (
