@@ -8,6 +8,21 @@ import { PwaInstallProvider } from "@/components/pwa-install-context";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { ThemeProvider } from "@/components/theme-provider";
 
+function registerPwaServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    if (process.env.NODE_ENV === "production") {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    } else {
+      // En dev, on désenregistre le SW pour éviter les caches périmés.
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister().catch(() => {});
+        }
+      });
+    }
+  }
+}
+
 export function Providers({
   children,
   locale,
@@ -18,9 +33,7 @@ export function Providers({
   messages: React.ComponentProps<typeof NextIntlClientProvider>["messages"];
 }) {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
+    registerPwaServiceWorker();
   }, []);
 
   return (
