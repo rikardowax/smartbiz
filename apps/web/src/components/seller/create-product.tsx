@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Plus } from "lucide-react";
+import { ImageIcon, Loader2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ export function CreateProductForm({
   const [stockQuantity, setStockQuantity] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState("5");
   const [unit, setUnit] = useState("pièce");
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     apiFetch<Category[]>("/categories")
@@ -63,6 +64,7 @@ export function CreateProductForm({
       categoryId: categoryId || undefined,
       unit: unit.trim() || "pièce",
       lowStockThreshold: Number.parseInt(lowStockThreshold, 10) || 5,
+      images: imageUrl.trim() ? [imageUrl.trim()] : undefined,
     };
 
     const cost = Number.parseInt(costPrice, 10);
@@ -212,6 +214,30 @@ export function CreateProductForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t("productDescriptionPlaceholder")}
         />
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="productImage">{t("productImage")}</Label>
+          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <Input
+          id="productImage"
+          type="url"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          placeholder={t("productImagePlaceholder")}
+        />
+        {imageUrl.trim() && (
+          <img
+            src={imageUrl}
+            alt=""
+            className="mt-3 h-32 w-full rounded-lg border border-border object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
       </div>
 
       <div className="flex gap-3">
