@@ -1,12 +1,15 @@
 "use client";
 
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
 import { CreateProductForm } from "@/components/seller/create-product";
 import { type EditableProduct, EditProductForm } from "@/components/seller/edit-product";
 import { SimpleList, type SimpleListColumn } from "@/components/seller/simple-list";
 import { Button } from "@/components/ui/button";
+import { useSellerShop } from "@/hooks/use-seller-shop";
+import { apiFetch } from "@/lib/api";
 
 interface Product {
   id: string;
@@ -25,9 +28,11 @@ interface Product {
 
 export default function ProductsPage() {
   const t = useTranslations("erp");
+  const { shopId } = useSellerShop();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<EditableProduct | null>(null);
   const [refetchKey, setRefetchKey] = useState(0);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const columns: SimpleListColumn<Product>[] = [
     { label: t("name"), accessor: (p) => p.name, className: "min-w-[180px]" },
@@ -38,31 +43,42 @@ export default function ProductsPage() {
     {
       label: t("actions"),
       render: (p) => (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() =>
-            setEditingProduct({
-              id: p.id,
-              name: p.name,
-              description: p.description,
-              categoryId: p.category?.id ?? null,
-              category: p.category,
-              price: p.price,
-              costPrice: p.costPrice,
-              compareAtPrice: p.compareAtPrice,
-              stockQuantity: p.stockQuantity,
-              lowStockThreshold: p.lowStockThreshold,
-              unit: p.unit,
-              images: p.images,
-              status: p.status,
-            })
-          }
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              setEditingProduct({
+                id: p.id,
+                name: p.name,
+                description: p.description,
+                categoryId: p.category?.id ?? null,
+                category: p.category,
+                price: p.price,
+                costPrice: p.costPrice,
+                compareAtPrice: p.compareAtPrice,
+                stockQuantity: p.stockQuantity,
+                lowStockThreshold: p.lowStockThreshold,
+                unit: p.unit,
+                images: p.images,
+                status: p.status,
+              })
+            }
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={deleting === p.id}
+            onClick={() => handleDelete(p.id)}
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       ),
-      className: "w-24",
+      className: "w-32",
     },
   ];
 
@@ -74,6 +90,22 @@ export default function ProductsPage() {
   const handleUpdated = () => {
     setEditingProduct(null);
     setRefetchKey((k) => k + 1);
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!shopId) return;
+    if (!window.confirm(t("deleteProductConfirm"))) return;
+
+    setDeleting(productId);
+    try {
+      await apiFetch(`/shops/${shopId}/products/${productId}`, { method: "DELETE" });
+      toast.success(t("deleteProductSuccess"));
+      setRefetchKey((k) => k + 1);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("error"));
+    } finally {
+      setDeleting(null);
+    }
   };
 
   return (
