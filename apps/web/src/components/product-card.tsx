@@ -1,9 +1,10 @@
 "use client";
 
-import { MapPin, Package } from "lucide-react";
+import { MapPin, Package, Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 export interface CatalogProduct {
   id: string;
@@ -47,10 +48,11 @@ export function ProductCard({
   const image = product.images?.[0];
   const isPlaceholder = !image || image.includes("picsum.photos");
   const discounted = product.compareAtPrice && product.compareAtPrice > product.price;
+  const productHref = `/products/${product.shop.slug}/${product.slug}`;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <Link href={productHref} className="relative aspect-square overflow-hidden bg-muted">
         {!imageError && !isPlaceholder ? (
           <Image
             src={image}
@@ -71,13 +73,20 @@ export function ProductCard({
             <Package className="mt-2 h-6 w-6 opacity-40" />
           </div>
         )}
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col p-4">
         <p className="text-xs text-muted-foreground">
-          {product.category.name} · {product.shop.name}
+          {product.category.name} ·{" "}
+          <Link href={`/shops/${product.shop.slug}`} className="hover:underline">
+            {product.shop.name}
+          </Link>
         </p>
-        <h3 className="mt-1 line-clamp-2 font-semibold text-card-foreground">{product.name}</h3>
+        <Link href={productHref}>
+          <h3 className="mt-1 line-clamp-2 font-semibold text-card-foreground transition-colors group-hover:text-primary">
+            {product.name}
+          </h3>
+        </Link>
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
 
         <div className="mt-3 flex items-end justify-between gap-3">
@@ -97,7 +106,7 @@ export function ProductCard({
             onClick={addToCart}
             disabled={!addToCart || product.stockQuantity <= 0}
           >
-            {product.stockQuantity > 0 ? "+" : "—"}
+            {product.stockQuantity > 0 ? <Plus className="h-4 w-4" /> : "—"}
           </Button>
         </div>
 

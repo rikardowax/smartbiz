@@ -10,6 +10,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { useCartStore } from "@/stores/cart-store";
 
 export function Header({ locale }: { locale: string }) {
   const t = useTranslations("nav");
@@ -20,6 +21,8 @@ export function Header({ locale }: { locale: string }) {
   const router = useRouter();
   const otherLocale = locale === "fr" ? "en" : "fr";
   const { isAuthenticated, user, logout } = useAuthStore();
+  const cartItems = useCartStore((s) => s.items);
+  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   useEffect(() => {
     setMounted(true);
@@ -27,6 +30,7 @@ export function Header({ locale }: { locale: string }) {
 
   const links = [
     { href: "/marketplace", label: t("marketplace") },
+    { href: "/shops", label: t("shops") },
     { href: "/dashboard", label: t("dashboard") },
     { href: "/assistant", label: t("assistant") },
     { href: "/salesbot", label: t("salesbot") },
@@ -98,11 +102,17 @@ export function Header({ locale }: { locale: string }) {
 
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="icon">
-                <Link href="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </Button>
+              <Link
+                href="/cart"
+                className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </span>
+                )}
+              </Link>
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                 {initials || <User className="h-4 w-4" />}
@@ -120,11 +130,17 @@ export function Header({ locale }: { locale: string }) {
             </div>
           ) : (
             <>
-              <Button asChild variant="ghost" size="icon">
-                <Link href="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </Button>
+              <Link
+                href="/cart"
+                className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </span>
+                )}
+              </Link>
 
               <Button asChild variant="outline" size="sm">
                 <Link href="/login">{t("login")}</Link>
@@ -139,6 +155,17 @@ export function Header({ locale }: { locale: string }) {
 
         <div className="flex items-center gap-2 md:hidden">
           <PwaInstallButton />
+          <Link
+            href="/cart"
+            className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
+          </Link>
           <Button
             variant="ghost"
             size="icon"

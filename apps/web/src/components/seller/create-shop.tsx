@@ -33,6 +33,7 @@ export function CreateShopForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState(user?.phone ?? "");
+  const [whatsapp, setWhatsapp] = useState("");
   const [cities, setCities] = useState<string[]>(DEFAULT_CITIES);
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
@@ -84,6 +85,7 @@ export function CreateShopForm() {
         body: JSON.stringify({
           name: name.trim(),
           phone: phone.trim(),
+          whatsappNumber: whatsapp.trim() || undefined,
           city: city.trim(),
           description: description.trim() || undefined,
           country: "Cameroun",
@@ -132,6 +134,17 @@ export function CreateShopForm() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+237699000001"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="shopWhatsapp">{t("shopWhatsapp")}</Label>
+            <Input
+              id="shopWhatsapp"
+              type="tel"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder={t("shopWhatsappPlaceholder")}
             />
           </div>
 

@@ -7,6 +7,7 @@ import { type CatalogProduct, ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
+import { useCartStore } from "@/stores/cart-store";
 
 export default function MarketplacePage() {
   const t = useTranslations("marketplace");
@@ -15,6 +16,7 @@ export default function MarketplacePage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("popular");
   const [error, setError] = useState("");
+  const addItem = useCartStore((s) => s.addItem);
 
   const load = async () => {
     setLoading(true);
@@ -100,7 +102,22 @@ export default function MarketplacePage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              addToCart={() =>
+                addItem({
+                  productId: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  price: product.price,
+                  unit: product.unit,
+                  quantity: 1,
+                  image: product.images?.[0],
+                  shop: product.shop,
+                })
+              }
+            />
           ))}
         </div>
       )}
