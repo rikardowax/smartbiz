@@ -1,11 +1,13 @@
 "use client";
 
-import { Bot, Loader2, Send, User } from "lucide-react";
+import { Bot, Loader2, Send, Store, User } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface Message {
   id: string;
@@ -16,6 +18,8 @@ interface Message {
 export default function AssistantPage() {
   const t = useTranslations("assistant");
   const locale = useLocale();
+  const { user } = useAuthStore();
+  const isSeller = user?.role === "SELLER" || user?.role === "ADMIN";
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { id: crypto.randomUUID(), role: "assistant", text: t("greeting") },
@@ -47,6 +51,19 @@ export default function AssistantPage() {
       setLoading(false);
     }
   };
+
+  if (!isSeller) {
+    return (
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-2xl flex-col items-center justify-center px-4 text-center">
+        <Store className="h-16 w-16 text-muted-foreground" />
+        <h1 className="mt-4 text-2xl font-bold text-foreground">{t("sellerOnly")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("createShopToUseAssistant")}</p>
+        <Button asChild className="mt-6">
+          <Link href="/dashboard">{t("openDashboard")}</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-4xl flex-col p-4 sm:p-6">

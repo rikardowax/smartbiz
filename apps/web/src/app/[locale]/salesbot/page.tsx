@@ -1,11 +1,13 @@
 "use client";
 
-import { Bot, Send, ShoppingCart, User } from "lucide-react";
+import { Bot, Send, ShoppingCart, Store, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface Product {
   id: string;
@@ -53,6 +55,8 @@ interface Checkout {
 
 export default function SalesBotPage() {
   const t = useTranslations("salesbot");
+  const { user } = useAuthStore();
+  const isSeller = user?.role === "SELLER" || user?.role === "ADMIN";
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>(() => [
     {
@@ -280,6 +284,19 @@ export default function SalesBotPage() {
       await loadProducts(text);
     }
   };
+
+  if (!isSeller) {
+    return (
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-2xl flex-col items-center justify-center px-4 text-center">
+        <Store className="h-16 w-16 text-muted-foreground" />
+        <h1 className="mt-4 text-2xl font-bold text-foreground">{t("sellerOnly")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("createShopToUseSalesBot")}</p>
+        <Button asChild className="mt-6">
+          <Link href="/dashboard">{t("openDashboard")}</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-3xl flex-col bg-background p-4 sm:p-6">

@@ -28,12 +28,18 @@ export function Header({ locale }: { locale: string }) {
     setMounted(true);
   }, []);
 
+  const isSeller = user?.role === "SELLER" || user?.role === "ADMIN";
+
   const links = [
     { href: "/marketplace", label: t("marketplace") },
     { href: "/shops", label: t("shops") },
     { href: "/dashboard", label: t("dashboard") },
-    { href: "/assistant", label: t("assistant") },
-    { href: "/salesbot", label: t("salesbot") },
+    ...(isSeller
+      ? [
+          { href: "/assistant", label: t("assistant") },
+          { href: "/salesbot", label: t("salesbot") },
+        ]
+      : []),
   ];
 
   const handleLogout = async () => {

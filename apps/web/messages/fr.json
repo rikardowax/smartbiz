@@ -139,7 +139,10 @@
     "greeting": "Bonjour ! Je peux vous aider à consulter votre tableau de bord, vos produits, stock, clients ou créer des fiches. Que souhaitez-vous faire ?",
     "placeholder": "Exemple : quels sont mes produits en rupture ?",
     "thinking": "L'assistant réfléchit...",
-    "error": "Une erreur est survenue."
+    "error": "Une erreur est survenue.",
+    "sellerOnly": "Assistant réservé aux vendeurs",
+    "createShopToUseAssistant": "Créez une boutique depuis le tableau de bord pour utiliser l'assistant.",
+    "openDashboard": "Ouvrir le tableau de bord"
   },
   "salesbot": {
     "title": "SalesBot",
@@ -157,6 +160,9 @@
     "askName": "Quel est le nom du destinataire ?",
     "askPhone": "Quel est son numéro de téléphone ?",
     "askCity": "Quelle est la ville de livraison ?",
+    "sellerOnly": "SalesBot réservé aux vendeurs",
+    "createShopToUseSalesBot": "Créez une boutique depuis le tableau de bord pour utiliser le SalesBot.",
+    "openDashboard": "Ouvrir le tableau de bord",
     "askAddress": "Quelle est l'adresse de livraison ?",
     "confirmOrder": "Confirmer",
     "cancelOrder": "Annuler",

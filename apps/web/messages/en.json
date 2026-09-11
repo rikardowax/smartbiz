@@ -139,7 +139,10 @@
     "greeting": "Hello! I can help you check your dashboard, products, stock, customers or create records. What would you like to do?",
     "placeholder": "E.g. which products are out of stock?",
     "thinking": "The assistant is thinking...",
-    "error": "Something went wrong."
+    "error": "Something went wrong.",
+    "sellerOnly": "Assistant reserved for sellers",
+    "createShopToUseAssistant": "Create a shop from the dashboard to use the assistant.",
+    "openDashboard": "Open dashboard"
   },
   "salesbot": {
     "title": "SalesBot",
@@ -158,6 +161,9 @@
     "askPhone": "What is their phone number?",
     "askCity": "What is the delivery city?",
     "askAddress": "What is the delivery address?",
+    "sellerOnly": "SalesBot reserved for sellers",
+    "createShopToUseSalesBot": "Create a shop from the dashboard to use the SalesBot.",
+    "openDashboard": "Open dashboard",
     "confirmOrder": "Confirm",
     "cancelOrder": "Cancel",
     "restart": "Restart",
