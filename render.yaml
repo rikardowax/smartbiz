@@ -3,7 +3,6 @@ services:
     name: smartbiz-api
     runtime: node
     plan: starter
-    region: frankfurt
     branch: master
     rootDir: .
     buildCommand: pnpm install && pnpm --filter @smartbiz/api build
@@ -28,7 +27,7 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: smartbiz-db
-          property: connectionString
+          property: externalConnectionString
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
@@ -48,7 +47,6 @@ services:
     name: smartbiz-web
     runtime: node
     plan: starter
-    region: frankfurt
     branch: master
     rootDir: .
     buildCommand: pnpm install && pnpm --filter @smartbiz/web build
