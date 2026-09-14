@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
+import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { useCartStore } from "@/stores/cart-store";
@@ -101,8 +102,10 @@ export default function ShopPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
+          <SalesbotLink shopSlug={shop.slug} />
+
           {shop.whatsappNumber && (
-            <Button asChild className="gap-2 bg-[#25D366] text-white hover:bg-[#128C7E]">
+            <Button asChild variant="outline" className="gap-2">
               <a
                 href={whatsappLink(shop.whatsappNumber, whatsappMessage)}
                 target="_blank"

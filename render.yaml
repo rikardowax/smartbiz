@@ -60,6 +60,9 @@ services:
         value: https://smartbiz-api.onrender.com
       - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
         sync: false
+      # Numéro WhatsApp unique du SalesBot, partagé par toutes les boutiques.
+      - key: NEXT_PUBLIC_WHATSAPP_BOT_NUMBER
+        sync: false
 
 databases:
   - name: smartbiz-db

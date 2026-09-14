@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Logger, Post, Query } from "@nestjs/common";
 import { Public } from "../../common/decorators/public.decorator.js";
-import { SalesbotService } from "./salesbot.service.js";
 import { WhatsAppWebhookDto } from "./dto/whatsapp-webhook.dto.js";
+import { SalesbotService } from "./salesbot.service.js";
 
 @Public()
 @Controller("webhooks")

@@ -1,11 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { BotMessageDirection } from "../../generated/prisma/enums.js";
 import { generateOrderNumber } from "../../common/utils/order-number.util.js";
+import { BotMessageDirection } from "../../generated/prisma/enums.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
-import { WhatsAppWebhookDto } from "./dto/whatsapp-webhook.dto.js";
+import type { WhatsAppWebhookDto } from "./dto/whatsapp-webhook.dto.js";
 
-const LOCALE = "fr";
+/** Nombre de boutiques ou de produits listés par message. */
+const PAGE_SIZE = 5;
+
+interface ShopRef {
+  id: string;
+  name: string;
+  slug: string;
+  currency: string;
+}
 
 interface CatalogProduct {
   id: string;
@@ -30,30 +38,41 @@ interface CheckoutData {
   address?: string;
 }
 
+type Step =
+  | "choose_shop"
+  | "browsing"
+  | "cart"
+  | "checkout_name"
+  | "checkout_phone"
+  | "checkout_city"
+  | "checkout_address"
+  | "confirm";
+
 interface SalesbotState {
-  step:
-    | "idle"
-    | "browsing"
-    | "cart"
-    | "checkout_name"
-    | "checkout_phone"
-    | "checkout_city"
-    | "checkout_address"
-    | "confirm"
-    | "done";
+  step: Step;
+  shopId: string | null;
   cart: CartItem[];
   lastProducts: CatalogProduct[];
+  lastShops: ShopRef[];
   checkout: CheckoutData;
-  locale: string;
 }
 
-const defaultState = (): SalesbotState => ({
-  step: "idle",
+const emptyState = (): SalesbotState => ({
+  step: "choose_shop",
+  shopId: null,
   cart: [],
   lastProducts: [],
+  lastShops: [],
   checkout: {},
-  locale: LOCALE,
 });
+
+interface BotReply {
+  state: SalesbotState;
+  reply: string;
+  order?: { id: string; orderNumber: string };
+}
+
+const money = (amount: number) => `${amount.toLocaleString("fr-FR")} FCFA`;
 
 @Injectable()
 export class SalesbotService {
@@ -73,215 +92,328 @@ export class SalesbotService {
     for (const entry of dto.entry) {
       for (const change of entry.changes) {
         if (change.field !== "messages") continue;
-        const metadata = change.value.metadata;
-        const businessPhone = this.normalizePhone(metadata.display_phone_number);
-
-        const shop = await this.findShop(businessPhone);
-        if (!shop) {
-          this.logger.warn(`Aucune boutique trouvée pour ${businessPhone}`);
-          continue;
-        }
 
         for (const message of change.value.messages ?? []) {
           if (message.type !== "text" || !message.text?.body) continue;
-          const customerPhone = this.normalizePhone(message.from);
-          const customerName = change.value.contacts?.find((c) => this.normalizePhone(c.wa_id) === customerPhone)?.profile
-            ?.name;
 
-          await this.processIncoming(shop, customerPhone, customerName ?? "", message.text.body);
+          const customerPhone = this.normalizePhone(message.from);
+          const contact = change.value.contacts?.find(
+            (c) => this.normalizePhone(c.wa_id) === customerPhone,
+          );
+
+          await this.processIncoming(
+            customerPhone,
+            contact?.profile?.name ?? "",
+            message.text.body,
+          );
         }
       }
     }
   }
 
-  private async processIncoming(shop: { id: string; currency: string; name: string }, customerPhone: string, customerName: string, text: string) {
-    const conversation = await this.upsertConversation(shop.id, customerPhone, customerName);
-    const state: SalesbotState = this.parseState(conversation.state);
+  private async processIncoming(customerPhone: string, customerName: string, text: string) {
+    const conversation = await this.upsertConversation(customerPhone, customerName);
+    const { state, reply, order } = await this.processMessage(
+      customerPhone,
+      customerName,
+      text,
+      this.parseState(conversation.state),
+    );
 
-    const { state: newState, reply, order } = await this.processMessage(shop, customerPhone, text, state);
+    await this.prisma.botConversation.update({
+      where: { id: conversation.id },
+      data: {
+        shopId: state.shopId,
+        state: state as unknown as object,
+        lastMessageAt: new Date(),
+      },
+    });
 
-    await this.prisma.$transaction([
-      this.prisma.botConversation.update({
-        where: { id: conversation.id },
-        data: { state: newState as object, lastMessageAt: new Date() },
-      }),
-      this.prisma.botMessage.create({
-        data: { conversationId: conversation.id, direction: BotMessageDirection.OUTBOUND, content: reply },
-      }),
-    ]);
-
-    if (order) {
-      await this.prisma.botMessage.create({
-        data: {
+    await this.prisma.botMessage.createMany({
+      data: [
+        {
+          conversationId: conversation.id,
+          direction: BotMessageDirection.INBOUND,
+          content: text,
+        },
+        {
           conversationId: conversation.id,
           direction: BotMessageDirection.OUTBOUND,
-          content: `Commande ${order.orderNumber} enregistrée.`,
-          payload: { orderId: order.id } as object,
+          content: reply,
+          ...(order ? { payload: { orderId: order.id } as object } : {}),
         },
-      });
-    }
+      ],
+    });
 
-    const phoneNumberId = this.config.get<string>("WHATSAPP_PHONE_NUMBER_ID");
-    if (phoneNumberId) {
-      await this.sendWhatsApp(customerPhone, reply, phoneNumberId);
-    } else {
-      this.logger.warn("WHATSAPP_PHONE_NUMBER_ID non configuré — message non envoyé.");
-    }
+    await this.sendWhatsApp(customerPhone, reply);
   }
 
+  // --- Routage des messages --------------------------------------------------
+
   private async processMessage(
-    shop: { id: string; currency: string; name: string },
     customerPhone: string,
+    customerName: string,
     text: string,
     state: SalesbotState,
-  ): Promise<{ state: SalesbotState; reply: string; order?: { id: string; orderNumber: string } }> {
-    const lower = text.toLowerCase().trim();
+  ): Promise<BotReply> {
+    const raw = text.trim();
+    const lower = raw.toLowerCase();
 
-    if (state.step.startsWith("checkout_")) {
-      return this.processCheckout(shop, customerPhone, text, state);
+    // Un lien profond « boutique:slug » place directement le client dans la
+    // bonne boutique, quel que soit l'état de la conversation.
+    const deepLink = lower.match(/^(?:boutique|shop)\s*[:=]\s*([a-z0-9-]+)/);
+    if (deepLink) {
+      const shop = await this.findShopBySlug(deepLink[1]);
+      if (shop) return this.enterShop(shop, state);
+      return this.listShops({ ...state, shopId: null, step: "choose_shop" });
     }
 
-    if (state.step === "confirm" || state.step === "done") {
-      if (lower === "confirmer" || lower === "oui") {
-        return this.confirmOrder(shop, customerPhone, state);
+    if (lower.match(/^(menu|aide|help|start|bonjour|bonsoir|salut|hi|hello)$/)) {
+      return this.listShops({ ...emptyState(), cart: state.cart, shopId: state.shopId });
+    }
+
+    if (lower.match(/^(boutiques?|shops?|changer)$/)) {
+      return this.listShops({ ...state, step: "choose_shop" });
+    }
+
+    if (state.step === "choose_shop") {
+      return this.handleShopChoice(raw, state);
+    }
+
+    const shop = state.shopId ? await this.findShopById(state.shopId) : null;
+    if (!shop) return this.listShops({ ...state, shopId: null, step: "choose_shop" });
+
+    if (state.step.startsWith("checkout_")) {
+      return this.handleCheckoutStep(raw, state);
+    }
+
+    if (state.step === "confirm") {
+      if (lower.match(/^(confirmer|confirm|oui|ok)$/)) {
+        return this.confirmOrder(shop, customerPhone, customerName, state);
       }
-      return { state: { ...defaultState(), locale: state.locale }, reply: this.welcome() };
+      return this.showCart({ ...state, step: "cart" });
     }
 
     if (lower.match(/^(catalogue|catalog|produits?|products?)$/)) {
-      return this.loadProducts(shop.id, state);
+      return this.listProducts(shop, state);
     }
 
     if (lower.match(/^(panier|cart)$/)) {
       return this.showCart(state);
     }
 
-    if (lower.match(/^(commander|order|acheter)$/)) {
+    if (lower.match(/^(commander|order|acheter|checkout)$/)) {
       return this.startCheckout(state);
     }
 
-    if (/^\d+$/.test(lower) && state.lastProducts.length > 0) {
-      const index = Number.parseInt(lower, 10) - 1;
-      const product = state.lastProducts[index];
-      if (product && product.stockQuantity > 0) {
-        return this.addToCart(state, product);
-      }
-      return { state, reply: "Ce numéro ne correspond à aucun produit disponible." };
+    if (lower.match(/^(vider|reset|annuler)$/)) {
+      return {
+        state: { ...state, cart: [], step: "browsing" },
+        reply: `Panier vidé.\n\n${this.shopHelp(shop)}`,
+      };
     }
 
-    return this.loadProducts(shop.id, state, text);
+    if (/^\d+$/.test(lower) && state.lastProducts.length > 0) {
+      const product = state.lastProducts[Number.parseInt(lower, 10) - 1];
+      if (product) return this.addToCart(state, product);
+      return {
+        state,
+        reply: `Ce numéro ne correspond à aucun produit de la liste.\n\n${this.shopHelp(shop)}`,
+      };
+    }
+
+    return this.listProducts(shop, state, raw);
   }
 
-  private async loadProducts(
-    shopId: string,
-    state: SalesbotState,
-    search = "",
-  ): Promise<{ state: SalesbotState; reply: string }> {
+  // --- Sélection de boutique -------------------------------------------------
+
+  private async listShops(state: SalesbotState): Promise<BotReply> {
+    const shops = await this.prisma.shop.findMany({
+      where: { status: "ACTIVE" },
+      take: PAGE_SIZE,
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, slug: true, currency: true, city: true },
+    });
+
+    if (shops.length === 0) {
+      return {
+        state: { ...state, step: "choose_shop", lastShops: [] },
+        reply: "Aucune boutique n'est disponible pour le moment.",
+      };
+    }
+
+    const list = shops.map((s, i) => `${i + 1}. ${s.name} — ${s.city}`).join("\n");
+
+    return {
+      state: { ...state, step: "choose_shop", lastShops: shops, lastProducts: [] },
+      reply: `Bienvenue sur SmartBiz.\n\nNos boutiques :\n${list}\n\nRépondez avec le numéro de la boutique qui vous intéresse.`,
+    };
+  }
+
+  private async handleShopChoice(raw: string, state: SalesbotState): Promise<BotReply> {
+    if (/^\d+$/.test(raw)) {
+      const chosen = state.lastShops[Number.parseInt(raw, 10) - 1];
+      if (chosen) return this.enterShop(chosen, state);
+    }
+
+    const byName = await this.prisma.shop.findFirst({
+      where: { status: "ACTIVE", name: { contains: raw, mode: "insensitive" } },
+      select: { id: true, name: true, slug: true, currency: true },
+    });
+    if (byName) return this.enterShop(byName, state);
+
+    const fallback = await this.listShops(state);
+    return { ...fallback, reply: `Je n'ai pas trouvé cette boutique.\n\n${fallback.reply}` };
+  }
+
+  private async enterShop(shop: ShopRef, state: SalesbotState): Promise<BotReply> {
+    // Changer de boutique remet le panier à zéro : une commande ne peut pas
+    // mélanger les produits de plusieurs vendeurs.
+    const switched = state.shopId !== null && state.shopId !== shop.id;
+    const base: SalesbotState = {
+      ...state,
+      shopId: shop.id,
+      step: "browsing",
+      cart: switched ? [] : state.cart,
+      lastShops: [],
+    };
+
+    const { state: next, reply } = await this.listProducts(shop, base);
+    return { state: next, reply: `*${shop.name}*\n\n${reply}` };
+  }
+
+  // --- Catalogue -------------------------------------------------------------
+
+  private async listProducts(shop: ShopRef, state: SalesbotState, search = ""): Promise<BotReply> {
     const products = await this.prisma.product.findMany({
       where: {
-        shopId,
+        shopId: shop.id,
         status: "ACTIVE",
         stockQuantity: { gt: 0 },
         ...(search ? { name: { contains: search, mode: "insensitive" as const } } : {}),
       },
-      take: 5,
+      take: PAGE_SIZE,
       orderBy: { soldCount: "desc" },
       select: { id: true, name: true, price: true, unit: true, stockQuantity: true },
     });
 
     if (products.length === 0) {
-      return { state: { ...state, step: "idle", lastProducts: [] }, reply: "Je n'ai trouvé aucun produit. Tapez *catalogue* pour la liste complète." };
+      const message = search
+        ? `Aucun produit ne correspond à « ${search} ».`
+        : "Cette boutique n'a pas encore de produit en ligne.";
+      return {
+        state: { ...state, step: "browsing", lastProducts: [] },
+        reply: `${message}\n\nTapez *boutiques* pour changer de boutique.`,
+      };
     }
 
     const list = products
-      .map((p, i) => `${i + 1}. ${p.name} — ${p.price.toLocaleString()} FCFA/${p.unit}`)
+      .map((p, i) => `${i + 1}. ${p.name} — ${money(p.price)}/${p.unit}`)
       .join("\n");
-    const instructions = `Tapez le numéro du produit pour l'ajouter au panier, *panier* pour voir votre panier ou *commander* pour finaliser.`;
 
     return {
       state: { ...state, step: "browsing", lastProducts: products },
-      reply: `${list}\n\n${instructions}`,
+      reply: `${list}\n\n${this.shopHelp(shop)}`,
     };
   }
 
-  private addToCart(state: SalesbotState, product: CatalogProduct): { state: SalesbotState; reply: string } {
+  private addToCart(state: SalesbotState, product: CatalogProduct): BotReply {
     const existing = state.cart.find((i) => i.productId === product.id);
     const cart = existing
-      ? state.cart.map((i) => (i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i))
-      : [...state.cart, { productId: product.id, name: product.name, price: product.price, unit: product.unit, quantity: 1 }];
+      ? state.cart.map((i) =>
+          i.productId === product.id
+            ? { ...i, quantity: Math.min(i.quantity + 1, product.stockQuantity) }
+            : i,
+        )
+      : [
+          ...state.cart,
+          {
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            unit: product.unit,
+            quantity: 1,
+          },
+        ];
 
-    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
     return {
       state: { ...state, cart, step: "browsing" },
-      reply: `${product.name} ajouté.\nTotal panier : ${total.toLocaleString()} FCFA\n*panier* / *commander* / *catalogue*`,
+      reply: `${product.name} ajouté au panier.\nTotal : ${money(this.total(cart))}\n\nTapez un autre numéro, *panier* ou *commander*.`,
     };
   }
 
-  private showCart(state: SalesbotState): { state: SalesbotState; reply: string } {
+  private showCart(state: SalesbotState): BotReply {
     if (state.cart.length === 0) {
-      return { state: { ...state, step: "idle" }, reply: "Votre panier est vide. Tapez *catalogue* pour parcourir." };
+      return {
+        state: { ...state, step: "browsing" },
+        reply: "Votre panier est vide. Tapez *catalogue* pour voir les produits.",
+      };
     }
 
-    const items = state.cart.map((i) => `• ${i.name} x${i.quantity}`).join("\n");
-    const total = state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const items = state.cart
+      .map((i) => `• ${i.name} x${i.quantity} — ${money(i.price * i.quantity)}`)
+      .join("\n");
+
     return {
       state: { ...state, step: "cart" },
-      reply: `${items}\n\nTotal : ${total.toLocaleString()} FCFA\nTapez *commander* pour passer la commande.`,
+      reply: `Votre panier :\n${items}\n\nTotal : ${money(this.total(state.cart))}\n\nTapez *commander* pour finaliser ou *vider* pour recommencer.`,
     };
   }
 
-  private startCheckout(state: SalesbotState): { state: SalesbotState; reply: string } {
+  // --- Commande --------------------------------------------------------------
+
+  private startCheckout(state: SalesbotState): BotReply {
     if (state.cart.length === 0) {
-      return { state: { ...state, step: "idle" }, reply: "Votre panier est vide." };
+      return {
+        state: { ...state, step: "browsing" },
+        reply: "Votre panier est vide. Tapez *catalogue* pour voir les produits.",
+      };
     }
     return {
-      state: { ...state, step: "checkout_name", checkout: {} },
+      state: { ...state, step: "checkout_name" },
       reply: "Quel est le nom du destinataire ?",
     };
   }
 
-  private processCheckout(
-    shop: { id: string; currency: string; name: string },
-    customerPhone: string,
-    text: string,
-    state: SalesbotState,
-  ): { state: SalesbotState; reply: string; order?: { id: string; orderNumber: string } } {
-    const field = state.step.replace("checkout_", "") as "name" | "phone" | "city" | "address";
-    const nextSteps: Record<string, { step: SalesbotState["step"]; prompt: string }> = {
-      name: { step: "checkout_phone", prompt: "Quel est le numéro de téléphone ?" },
-      phone: { step: "checkout_city", prompt: "Quelle est la ville de livraison ?" },
-      city: { step: "checkout_address", prompt: "Quelle est l'adresse de livraison ?" },
-      address: { step: "confirm", prompt: "" },
+  private handleCheckoutStep(text: string, state: SalesbotState): BotReply {
+    const prompts: Record<string, { field: keyof CheckoutData; next: Step; prompt: string }> = {
+      checkout_name: { field: "name", next: "checkout_phone", prompt: "Numéro de téléphone ?" },
+      checkout_phone: { field: "phone", next: "checkout_city", prompt: "Ville de livraison ?" },
+      checkout_city: { field: "city", next: "checkout_address", prompt: "Adresse de livraison ?" },
+      checkout_address: { field: "address", next: "confirm", prompt: "" },
     };
 
-    const checkout = { ...state.checkout, [field]: text };
+    const current = prompts[state.step];
+    const checkout = { ...state.checkout, [current.field]: text };
 
-    if (field === "address") {
-      const total = state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      const summary = `
-${checkout.name}
-${checkout.phone}
-${checkout.city}
-${checkout.address}
-
-Total : ${total.toLocaleString()} FCFA
-
-Tapez *confirmer* pour valider ou *annuler* pour recommencer.`;
-      return { state: { ...state, step: "confirm", checkout }, reply: summary };
+    if (current.next !== "confirm") {
+      return { state: { ...state, step: current.next, checkout }, reply: current.prompt };
     }
 
-    return { state: { ...state, step: nextSteps[field].step, checkout }, reply: nextSteps[field].prompt };
+    const items = state.cart
+      .map((i) => `• ${i.name} x${i.quantity} — ${money(i.price * i.quantity)}`)
+      .join("\n");
+
+    return {
+      state: { ...state, step: "confirm", checkout },
+      reply: `Récapitulatif :\n${items}\n\nTotal : ${money(this.total(state.cart))}\n\nLivraison :\n${checkout.name}\n${checkout.phone}\n${checkout.city}\n${checkout.address}\n\nTapez *confirmer* pour valider ou *panier* pour modifier.`,
+    };
   }
 
   private async confirmOrder(
-    shop: { id: string; currency: string; name: string },
+    shop: ShopRef,
     customerPhone: string,
+    customerName: string,
     state: SalesbotState,
-  ): Promise<{ state: SalesbotState; reply: string; order: { id: string; orderNumber: string } }> {
-    const customer = await this.upsertCustomer(shop.id, customerPhone, state.checkout.name);
+  ): Promise<BotReply> {
+    const customer = await this.upsertCustomer(
+      shop.id,
+      customerPhone,
+      state.checkout.name || customerName || customerPhone,
+      state.checkout.city,
+    );
 
-    const subtotal = state.cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const total = subtotal;
+    const subtotal = this.total(state.cart);
 
     const order = await this.prisma.order.create({
       data: {
@@ -295,9 +427,9 @@ Tapez *confirmer* pour valider ou *annuler* pour recommencer.`;
         subtotal,
         deliveryFee: 0,
         discount: 0,
-        total,
+        total: subtotal,
         currency: shop.currency,
-        contactName: state.checkout.name ?? customer.name ?? "",
+        contactName: state.checkout.name ?? customer.name,
         contactPhone: state.checkout.phone ?? customerPhone,
         deliveryCity: state.checkout.city ?? "",
         deliveryLine1: state.checkout.address ?? "",
@@ -311,102 +443,97 @@ Tapez *confirmer* pour valider ou *annuler* pour recommencer.`;
           })),
         },
         events: {
-          create: {
-            status: "PENDING",
-            message: "Commande passée via WhatsApp SalesBot",
-          },
+          create: { status: "PENDING", message: "Commande passée via WhatsApp SalesBot" },
         },
       },
     });
 
     return {
-      state: { ...defaultState(), locale: state.locale },
-      reply: `Commande confirmée ! Numéro : *${order.orderNumber}*. Total : ${total.toLocaleString()} FCFA. Merci pour votre confiance.`,
-      order: { id: order.id, orderNumber: order.orderNumber },
+      state: { ...emptyState(), shopId: shop.id, step: "browsing" },
+      reply: `Commande confirmée.\n\nNuméro : *${order.orderNumber}*\nTotal : ${money(subtotal)}\n\n${shop.name} vous contactera pour la livraison. Merci !`,
     };
   }
 
-  private welcome(): string {
-    return `Bonjour ! Bienvenue dans notre boutique WhatsApp.\n\nTapez :\n• *catalogue* — voir les produits\n• *panier* — voir le panier\n• *commander* — passer commande`;
-  }
+  // --- Accès aux données -----------------------------------------------------
 
-  private async findShop(phone: string) {
-    const allShops = await this.prisma.shop.findMany({
-      where: { status: "ACTIVE" },
-      select: { id: true, name: true, phone: true, whatsappNumber: true, currency: true },
+  private findShopById(id: string) {
+    return this.prisma.shop.findFirst({
+      where: { id, status: "ACTIVE" },
+      select: { id: true, name: true, slug: true, currency: true },
     });
-
-    return allShops.find((s) => this.normalizePhone(s.whatsappNumber ?? s.phone) === phone);
   }
 
-  private async upsertConversation(shopId: string, customerPhone: string, customerName: string) {
-    const conv = await this.prisma.botConversation.upsert({
-      where: { shopId_customerPhone: { shopId, customerPhone } },
-      create: { shopId, customerPhone, customerName, state: defaultState() as object },
-      update: { customerName, lastMessageAt: new Date() },
+  private findShopBySlug(slug: string) {
+    return this.prisma.shop.findFirst({
+      where: { slug, status: "ACTIVE" },
+      select: { id: true, name: true, slug: true, currency: true },
     });
-
-    if (!conv) {
-      throw new Error("Impossible de créer la conversation");
-    }
-
-    return conv;
   }
 
-  private async upsertCustomer(shopId: string, phone: string, name?: string) {
-    const customer = await this.prisma.customer.upsert({
+  private upsertConversation(customerPhone: string, customerName: string) {
+    return this.prisma.botConversation.upsert({
+      where: { customerPhone },
+      create: {
+        customerPhone,
+        customerName: customerName || null,
+        state: emptyState() as unknown as object,
+      },
+      update: { ...(customerName ? { customerName } : {}), lastMessageAt: new Date() },
+    });
+  }
+
+  private upsertCustomer(shopId: string, phone: string, name: string, city?: string) {
+    return this.prisma.customer.upsert({
       where: { shopId_phone: { shopId, phone } },
-      create: { shopId, phone, name: name ?? phone },
-      update: { name: name ?? undefined },
+      create: { shopId, phone, name, city: city ?? null },
+      update: { name, ...(city ? { city } : {}) },
     });
-    return customer;
+  }
+
+  // --- Utilitaires -----------------------------------------------------------
+
+  private total(cart: CartItem[]): number {
+    return cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  }
+
+  private shopHelp(shop: ShopRef): string {
+    return `Tapez le numéro d'un produit pour l'ajouter au panier, *panier*, *commander*, ou *boutiques* pour changer de vendeur.\n_${shop.name}_`;
   }
 
   private parseState(raw: unknown): SalesbotState {
-    try {
-      return { ...defaultState(), ...(raw as Record<string, unknown> ?? {}) } as SalesbotState;
-    } catch {
-      return defaultState();
-    }
+    if (!raw || typeof raw !== "object") return emptyState();
+    return { ...emptyState(), ...(raw as Partial<SalesbotState>) };
   }
 
   private normalizePhone(phone?: string): string {
-    if (!phone) return "";
-    const digits = phone.replace(/\D/g, "");
+    const digits = (phone ?? "").replace(/\D/g, "");
     return digits ? `+${digits}` : "";
   }
 
-  private async sendWhatsApp(to: string, text: string, phoneNumberId: string): Promise<void> {
+  private async sendWhatsApp(to: string, text: string): Promise<void> {
     const token = this.config.get<string>("WHATSAPP_TOKEN");
+    const phoneNumberId = this.config.get<string>("WHATSAPP_PHONE_NUMBER_ID");
     const version = this.config.get<string>("WHATSAPP_API_VERSION") ?? "v20.0";
 
-    if (!token) {
-      this.logger.warn("WHATSAPP_TOKEN non configuré.");
+    if (!token || !phoneNumberId) {
+      this.logger.warn("WhatsApp non configuré — réponse enregistrée mais non envoyée.");
       return;
     }
 
     const res = await fetch(`https://graph.facebook.com/${version}/${phoneNumberId}/messages`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         messaging_product: "whatsapp",
         recipient_type: "individual",
-        to: this.cleanPhoneForApi(to),
+        to: to.replace(/\D/g, ""),
         type: "text",
         text: { body: text },
       }),
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      this.logger.error(`WhatsApp API error ${res.status}: ${err}`);
+      this.logger.error(`WhatsApp API ${res.status}: ${await res.text()}`);
     }
-  }
-
-  private cleanPhoneForApi(phone: string): string {
-    return phone.replace(/\D/g, "");
   }
 }

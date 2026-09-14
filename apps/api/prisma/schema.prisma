@@ -484,17 +484,16 @@ model AssistantMessage {
 
 model BotConversation {
   id            String   @id @default(cuid())
-  shopId        String
-  customerPhone String
+  shopId        String?
+  customerPhone String   @unique
   customerName  String?
   state         Json     @default("{}")
   lastMessageAt DateTime @default(now())
   createdAt     DateTime @default(now())
 
-  shop     Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop     Shop?        @relation(fields: [shopId], references: [id], onDelete: SetNull)
   messages BotMessage[]
 
-  @@unique([shopId, customerPhone])
   @@index([shopId, lastMessageAt])
   @@map("bot_conversations")
 }

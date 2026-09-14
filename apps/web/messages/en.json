@@ -150,6 +150,7 @@
   "salesbot": {
     "title": "SalesBot",
     "subtitle": "WhatsApp Simulator",
+    "orderViaBot": "Order on WhatsApp",
     "online": "online",
     "placeholder": "Type a message...",
     "welcome": "Hello! I'm the SmartBiz WhatsApp SalesBot. Type *catalog* to see products, *cart* for your cart, or *order* to checkout.",

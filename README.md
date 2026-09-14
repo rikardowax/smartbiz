@@ -48,11 +48,33 @@ pnpm install
 
    - `GEMINI_API_KEY` : clé Google AI Studio
    - `GOOGLE_CLIENT_ID` : pour la connexion Google (optionnel)
+   - `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` : SalesBot WhatsApp (optionnel)
 
    Pour le web, créez `apps/web/.env.local` avec :
 
    - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` : identique à `GOOGLE_CLIENT_ID`
    - `NEXT_PUBLIC_API_URL` : `http://localhost:3000` en local
+   - `NEXT_PUBLIC_WHATSAPP_BOT_NUMBER` : numéro du SalesBot, ex. `+237651385391`
+
+## SalesBot WhatsApp
+
+La plateforme utilise **un seul numéro WhatsApp** pour toutes les boutiques.
+Le bot identifie la boutique de trois façons :
+
+1. **Lien profond** — les boutons « Commander sur WhatsApp » du site ouvrent
+   WhatsApp avec `boutique:<slug>` prérempli.
+2. **Menu** — un client qui écrit `menu` reçoit la liste des boutiques et
+   répond par un numéro.
+3. **Recherche par nom** — le client peut taper le nom de la boutique.
+
+La boutique en cours est mémorisée dans `bot_conversations.state`. Changer de
+boutique vide le panier : une commande ne mélange pas plusieurs vendeurs.
+
+Webhook à déclarer dans Meta :
+
+```
+https://<domaine-api>/api/v1/webhooks/whatsapp
+```
 
 ## Démarrage
 

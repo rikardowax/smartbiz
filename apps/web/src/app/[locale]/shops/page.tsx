@@ -3,6 +3,7 @@
 import { Loader2, MapPin, MessageCircle, Search, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
@@ -142,6 +143,7 @@ export default function ShopsPage() {
                   <Button asChild size="sm" className="flex-1">
                     <Link href={`/shops/${shop.slug}`}>{t("viewShop")}</Link>
                   </Button>
+                  <SalesbotLink shopSlug={shop.slug} size="sm" iconOnly className="shrink-0" />
                   {shop.whatsappNumber && (
                     <Button asChild size="sm" variant="outline" className="shrink-0">
                       <a

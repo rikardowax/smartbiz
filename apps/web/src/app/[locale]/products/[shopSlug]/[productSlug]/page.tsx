@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
+import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
@@ -182,8 +183,10 @@ export default function ProductDetailPage() {
               {t("addToCart")}
             </Button>
 
+            <SalesbotLink shopSlug={product.shop.slug} />
+
             {product.shop.whatsappNumber && (
-              <Button asChild className="gap-2 bg-[#25D366] text-white hover:bg-[#128C7E]">
+              <Button asChild variant="outline" className="gap-2">
                 <a
                   href={whatsappLink(product.shop.whatsappNumber, whatsappMessage)}
                   target="_blank"
