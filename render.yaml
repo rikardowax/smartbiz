@@ -63,5 +63,5 @@ services:
 
 databases:
   - name: smartbiz-db
-    plan: starter
+    plan: free
     region: frankfurt
