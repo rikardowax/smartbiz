@@ -12,10 +12,11 @@ services:
         value: production
       - key: API_PREFIX
         value: api/v1
+      # Renseignez l'URL réelle du front (ex. https://smartbiz-web.onrender.com).
       - key: CORS_ORIGINS
-        value: https://smartbiz-web.onrender.com
+        sync: false
       - key: WEB_APP_URL
-        value: https://smartbiz-web.onrender.com
+        sync: false
       - key: JWT_ACCESS_TTL
         value: 15m
       - key: JWT_REFRESH_TTL
@@ -54,8 +55,9 @@ services:
         value: production
       - key: PORT
         value: 3001
+      # Renseignez l'URL réelle de l'API (ex. https://smartbiz-api-xxx.onrender.com).
       - key: NEXT_PUBLIC_API_URL
-        value: https://smartbiz-api.onrender.com
+        sync: false
       - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
         sync: false
       # Numéro WhatsApp unique du SalesBot, partagé par toutes les boutiques.

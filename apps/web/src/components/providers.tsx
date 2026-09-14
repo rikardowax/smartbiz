@@ -3,6 +3,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { BuyerAssistant } from "@/components/buyer-assistant";
 import { FloatingAssistant } from "@/components/floating-assistant";
 import { PwaInstallProvider } from "@/components/pwa-install-context";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
@@ -49,6 +50,7 @@ export function Providers({
           <Toaster richColors closeButton position="top-center" />
           <PwaInstallPrompt />
           <FloatingAssistant />
+          <BuyerAssistant />
         </ThemeProvider>
       </PwaInstallProvider>
     </NextIntlClientProvider>

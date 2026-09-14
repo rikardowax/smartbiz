@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Public } from "../../common/decorators/public.decorator.js";
 import { CurrentUser } from "../../common/decorators/current-user.decorator.js";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
@@ -16,7 +17,7 @@ export class AssistantController {
   ) {}
 
   @Post("chat")
-  @ApiOperation({ summary: "Discuter avec l'assistant SmartBiz" })
+  @ApiOperation({ summary: "Discuter avec l'assistant vendeur SmartBiz" })
   async chat(@Body() dto: AssistantChatDto, @CurrentUser() user: AuthenticatedUser) {
     const me = await this.prisma.user.findUnique({
       where: { id: user.id },
@@ -36,6 +37,16 @@ export class AssistantController {
       locale: dto.locale ?? "fr",
     });
 
+    return { text: response.text };
+  }
+
+  @Public()
+  @Post("buyer/chat")
+  @ApiOperation({ summary: "Discuter avec l'assistant acheteur SmartBiz" })
+  async chatBuyer(@Body() dto: AssistantChatDto) {
+    const response = await this.assistant.chatBuyer(dto.message, {
+      locale: dto.locale ?? "fr",
+    });
     return { text: response.text };
   }
 }

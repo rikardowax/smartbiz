@@ -13,11 +13,14 @@ import {
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../../prisma/prisma.service.js";
+import { ShopStatus } from "../../generated/prisma/enums.js";
 import { DashboardService } from "../dashboard/dashboard.service.js";
 import { CustomersService } from "../partners/customers.service.js";
 import { ProductsService } from "../products/products.service.js";
+import type { CatalogQueryDto } from "../products/dto/product.dto.js";
 
 type AssistantContext = { shopId: string; userId: string; locale: string };
+type BuyerAssistantContext = { locale: string };
 
 @Injectable()
 export class AssistantService {
@@ -101,12 +104,90 @@ export class AssistantService {
     return [{ functionDeclarations: declarations }];
   }
 
+  private buyerSystemPrompt(locale: string): string {
+    const instructions =
+      locale === "en"
+        ? "You are SmartBiz, a helpful shopping assistant for African buyers. Guide the customer to find the right products, compare offers, check availability, and make a purchase. Be concise, friendly, and practical. Always answer in the language of the user."
+        : "Tu es SmartBiz, un assistant d'achat utile pour les acheteurs africains. Guide le client pour trouver les bons produits, comparer les offres, vérifier la disponibilité et passer une commande. Sois concis, amical et pratique. Réponds toujours dans la langue de l'utilisateur.";
+    return instructions;
+  }
+
   private systemPrompt(locale: string): string {
     const instructions =
       locale === "en"
         ? "You are SmartBiz, a helpful assistant for African merchants. Use the available tools to answer questions or act on the seller's shop. Be concise and professional."
         : "Tu es SmartBiz, un assistant utile pour les commerçants africains. Utilise les outils disponibles pour répondre aux questions ou agir sur la boutique du vendeur. Sois concis et professionnel.";
     return instructions;
+  }
+
+  private getBuyerTools(): Tool[] {
+    const declarations: FunctionDeclaration[] = [
+      {
+        name: "searchProducts",
+        description:
+          "Recherche des produits dans la marketplace. Utilise cette fonction pour trouver, filtrer ou comparer des produits.",
+        parametersJsonSchema: {
+          type: "object",
+          properties: {
+            search: { type: "string", description: "Mots-clés de recherche (nom, catégorie, boutique)" },
+            category: { type: "string", description: "Slug de la catégorie" },
+            shop: { type: "string", description: "Slug de la boutique" },
+            city: { type: "string", description: "Ville du vendeur" },
+            minPrice: { type: "integer", description: "Prix minimum en FCFA" },
+            maxPrice: { type: "integer", description: "Prix maximum en FCFA" },
+            inStockOnly: { type: "boolean", default: true },
+            sort: {
+              type: "string",
+              enum: ["recent", "price_asc", "price_desc", "popular", "rating"],
+              default: "popular",
+            },
+            limit: { type: "integer", default: 8 },
+          },
+          required: [],
+        },
+      },
+      {
+        name: "getProductDetails",
+        description: "Récupère les détails d'un produit spécifique et des produits similaires.",
+        parametersJsonSchema: {
+          type: "object",
+          properties: {
+            shopSlug: { type: "string" },
+            productSlug: { type: "string" },
+          },
+          required: ["shopSlug", "productSlug"],
+        },
+      },
+      {
+        name: "listCategories",
+        description: "Liste les catégories de produits disponibles.",
+        parametersJsonSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+        },
+      },
+      {
+        name: "listShops",
+        description: "Liste les boutiques actives sur la marketplace.",
+        parametersJsonSchema: {
+          type: "object",
+          properties: {
+            city: { type: "string" },
+            limit: { type: "integer", default: 10 },
+          },
+          required: [],
+        },
+      },
+      {
+        name: "getCartHelp",
+        description:
+          "Explique comment ajouter un produit au panier, passer commande ou contacter le vendeur via WhatsApp.",
+        parametersJsonSchema: { type: "object", properties: {}, required: [] },
+      },
+    ];
+
+    return [{ functionDeclarations: declarations }];
   }
 
   async chat(message: string, context: AssistantContext) {
@@ -146,6 +227,116 @@ export class AssistantService {
     }
 
     return { text: initial.text ?? "" };
+  }
+
+  async chatBuyer(message: string, context: BuyerAssistantContext) {
+    if (!this.ai) {
+      throw new ServiceUnavailableException(
+        "Clé GEMINI_API_KEY manquante. Ajoutez-la pour activer l'assistant.",
+      );
+    }
+
+    const system = this.buyerSystemPrompt(context.locale);
+    const initial = await this.ai.models.generateContent({
+      model: this.model,
+      contents: [
+        createModelContent([createPartFromText(system)]),
+        createUserContent([createPartFromText(message)]),
+      ],
+      config: {
+        tools: this.getBuyerTools(),
+        toolConfig: {
+          functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO },
+        },
+      },
+    });
+
+    const calls = initial.functionCalls;
+    if (calls && calls.length > 0) {
+      const functionContents = await this.executeBuyerCalls(calls, context);
+      const followUp = await this.ai.models.generateContent({
+        model: this.model,
+        contents: [
+          createModelContent([createPartFromText(system)]),
+          createUserContent([createPartFromText(message)]),
+          ...functionContents,
+        ],
+      });
+      return { text: followUp.text ?? "" };
+    }
+
+    return { text: initial.text ?? "" };
+  }
+
+  private async executeBuyerCalls(
+    calls: FunctionCall[],
+    context: BuyerAssistantContext,
+  ): Promise<ReturnType<typeof createModelContent>[]> {
+    const results: ReturnType<typeof createModelContent>[] = [];
+
+    for (const call of calls) {
+      const id = call.id ?? "";
+      const name = call.name ?? "";
+      const args = (call.args ?? {}) as Record<string, unknown>;
+      const result = await this.executeBuyerTool(name, args);
+
+      results.push(createModelContent([createPartFromFunctionCall(name, args)]));
+      results.push(
+        createUserContent([createPartFromFunctionResponse(id, name, { output: result })]),
+      );
+    }
+
+    return results;
+  }
+
+  private async executeBuyerTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+    switch (name) {
+      case "searchProducts":
+        return this.products.findCatalog({
+          search: args.search ? String(args.search) : undefined,
+          category: args.category ? String(args.category) : undefined,
+          shop: args.shop ? String(args.shop) : undefined,
+          city: args.city ? String(args.city) : undefined,
+          minPrice: args.minPrice ? Number(args.minPrice) : undefined,
+          maxPrice: args.maxPrice ? Number(args.maxPrice) : undefined,
+          inStockOnly:
+            args.inStockOnly === true || (args.inStockOnly as unknown as string) === "true",
+          sort: (args.sort ? String(args.sort) : "popular") as CatalogQueryDto["sort"],
+          page: 1,
+          limit: args.limit ? Number(args.limit) : 8,
+          skip: 0,
+        } as CatalogQueryDto);
+      case "getProductDetails":
+        return this.products.findPublicBySlug(String(args.shopSlug), String(args.productSlug));
+      case "listCategories":
+        return this.prisma.category.findMany({
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, slug: true },
+        });
+      case "listShops":
+        return this.prisma.shop.findMany({
+          where: {
+            status: ShopStatus.ACTIVE,
+            ...(args.city ? { city: { equals: String(args.city), mode: "insensitive" } } : {}),
+          },
+          orderBy: { name: "asc" },
+          take: Number(args.limit ?? 10),
+          select: { id: true, name: true, slug: true, city: true, phone: true },
+        });
+      case "getCartHelp":
+        return {
+          steps: [
+            "1. Ouvrez la page du produit qui vous intéresse.",
+            "2. Choisissez la quantité et cliquez sur 'Ajouter au panier'.",
+            "3. Allez dans le panier pour vérifier votre commande.",
+            "4. Validez la commande ou contactez le vendeur par WhatsApp.",
+          ],
+          whatsappHelp:
+            "Sur la page boutique ou produit, utilisez le bouton 'Commander sur WhatsApp' pour discuter directement avec le vendeur.",
+        };
+      default:
+        return { error: "Fonction inconnue" };
+    }
   }
 
   private async executeCalls(

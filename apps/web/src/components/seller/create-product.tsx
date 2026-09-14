@@ -1,12 +1,13 @@
 "use client";
 
-import { ImageIcon, Loader2, Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ProductImageUpload } from "@/components/product-image-upload";
 import { useSellerShop } from "@/hooks/use-seller-shop";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function CreateProductForm({
   const [stockQuantity, setStockQuantity] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState("5");
   const [unit, setUnit] = useState("pièce");
-  const [imageUrl, setImageUrl] = useState("");
+  const [image, setImage] = useState("");
 
   useEffect(() => {
     apiFetch<Category[]>("/categories")
@@ -64,7 +65,7 @@ export function CreateProductForm({
       categoryId: categoryId || undefined,
       unit: unit.trim() || "pièce",
       lowStockThreshold: Number.parseInt(lowStockThreshold, 10) || 5,
-      images: imageUrl.trim() ? [imageUrl.trim()] : undefined,
+      images: image.trim() ? [image.trim()] : undefined,
     };
 
     const cost = Number.parseInt(costPrice, 10);
@@ -216,29 +217,7 @@ export function CreateProductForm({
         />
       </div>
 
-      <div>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="productImage">{t("productImage")}</Label>
-          <ImageIcon className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <Input
-          id="productImage"
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder={t("productImagePlaceholder")}
-        />
-        {imageUrl.trim() && (
-          <img
-            src={imageUrl}
-            alt=""
-            className="mt-3 h-32 w-full rounded-lg border border-border object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
-      </div>
+      <ProductImageUpload name="productImage" value={image} onChange={setImage} />
 
       <div className="flex gap-3">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>

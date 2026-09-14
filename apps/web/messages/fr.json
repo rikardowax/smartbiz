@@ -147,6 +147,16 @@
     "createShopToUseAssistant": "Créez une boutique depuis le tableau de bord pour utiliser l'assistant.",
     "openDashboard": "Ouvrir le tableau de bord"
   },
+  "buyerAssistant": {
+    "title": "Conseiller d'achat",
+    "subtitle": "Trouvez le bon produit et comparez les offres.",
+    "greeting": "Bonjour ! Je peux vous aider à trouver des produits, comparer les prix et guider votre achat. Que cherchez-vous ?",
+    "placeholder": "Exemple : je cherche du riz pas cher à Douala",
+    "thinking": "Le conseiller réfléchit...",
+    "error": "Une erreur est survenue.",
+    "newAssistantMessage": "Nouveau message du conseiller",
+    "openChat": "Ouvrir"
+  },
   "salesbot": {
     "title": "SalesBot",
     "subtitle": "Simulateur WhatsApp",
@@ -230,7 +240,8 @@
     "lowStockThreshold": "Seuil d'alerte stock",
     "unit": "Unité",
     "productDescriptionPlaceholder": "Description courte du produit...",
-    "productImage": "Image du produit (URL)",
+    "productImage": "Image du produit",
+    "productImageHint": "Cliquez pour choisir une image sur votre appareil",
     "productImagePlaceholder": "https://example.com/image.jpg",
     "createProductSuccess": "Produit ajouté avec succès",
     "editProduct": "Modifier le produit",

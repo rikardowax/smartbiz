@@ -147,6 +147,16 @@
     "createShopToUseAssistant": "Create a shop from the dashboard to use the assistant.",
     "openDashboard": "Open dashboard"
   },
+  "buyerAssistant": {
+    "title": "Shopping advisor",
+    "subtitle": "Find the right product and compare offers.",
+    "greeting": "Hello! I can help you find products, compare prices and guide your purchase. What are you looking for?",
+    "placeholder": "E.g. I'm looking for cheap rice in Douala",
+    "thinking": "The advisor is thinking...",
+    "error": "Something went wrong.",
+    "newAssistantMessage": "New message from the advisor",
+    "openChat": "Open"
+  },
   "salesbot": {
     "title": "SalesBot",
     "subtitle": "WhatsApp Simulator",
@@ -230,7 +240,8 @@
     "lowStockThreshold": "Low stock threshold",
     "unit": "Unit",
     "productDescriptionPlaceholder": "Short product description...",
-    "productImage": "Product image (URL)",
+    "productImage": "Product image",
+    "productImageHint": "Click to choose an image from your device",
     "productImagePlaceholder": "https://example.com/image.jpg",
     "createProductSuccess": "Product added successfully",
     "editProduct": "Edit product",

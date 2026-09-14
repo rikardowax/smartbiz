@@ -2,13 +2,16 @@ import "dotenv/config";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { PrismaExceptionFilter } from "./common/filters/prisma-exception.filter.js";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  app.useBodyParser("json", { limit: "8mb" });
+  app.useBodyParser("urlencoded", { limit: "8mb", extended: true });
   const config = app.get(ConfigService);
   const logger = new Logger("Bootstrap");
 

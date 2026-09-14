@@ -1,12 +1,13 @@
 "use client";
 
-import { ImageIcon, Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ProductImageUpload } from "@/components/product-image-upload";
 import { useSellerShop } from "@/hooks/use-seller-shop";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,7 @@ export function EditProductForm({
   const [stockQuantity, setStockQuantity] = useState(product.stockQuantity.toString());
   const [lowStockThreshold, setLowStockThreshold] = useState(product.lowStockThreshold.toString());
   const [unit, setUnit] = useState(product.unit);
-  const [imageUrl, setImageUrl] = useState(product.images?.[0] ?? "");
+  const [image, setImage] = useState(product.images?.[0] ?? "");
 
   useEffect(() => {
     apiFetch<Category[]>("/categories")
@@ -82,7 +83,7 @@ export function EditProductForm({
       categoryId: categoryId || undefined,
       unit: unit.trim() || "pièce",
       lowStockThreshold: Number.parseInt(lowStockThreshold, 10) || 5,
-      images: imageUrl.trim() ? [imageUrl.trim()] : undefined,
+      images: image.trim() ? [image.trim()] : undefined,
       status: product.status,
     };
 
@@ -235,29 +236,11 @@ export function EditProductForm({
         />
       </div>
 
-      <div>
-        <div className="flex items-center gap-2">
-          <Label htmlFor={`editProductImage-${product.id}`}>{t("productImage")}</Label>
-          <ImageIcon className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <Input
-          id={`editProductImage-${product.id}`}
-          type="url"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder={t("productImagePlaceholder")}
-        />
-        {imageUrl.trim() && (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="mt-3 h-32 w-full rounded-lg border border-border object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
-      </div>
+      <ProductImageUpload
+        name={`editProductImage-${product.id}`}
+        value={image}
+        onChange={setImage}
+      />
 
       <div className="flex gap-3">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
