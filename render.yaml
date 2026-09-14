@@ -3,6 +3,7 @@ services:
     name: smartbiz-api
     runtime: node
     plan: starter
+    region: frankfurt
     branch: master
     rootDir: .
     buildCommand: pnpm install && pnpm --filter @smartbiz/api build
@@ -47,6 +48,7 @@ services:
     name: smartbiz-web
     runtime: node
     plan: starter
+    region: frankfurt
     branch: master
     rootDir: .
     buildCommand: pnpm install && pnpm --filter @smartbiz/web build
