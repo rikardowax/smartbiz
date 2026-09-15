@@ -426,7 +426,10 @@ async function main() {
           costPrice: seed.costPrice,
           stockQuantity: seed.stock,
           lowStockThreshold: 5,
-          images: [productImage(seed.name, seed.category, slug, 1), productImage(seed.name, seed.category, slug, 2)],
+          images: [
+            productImage(seed.name, seed.category, slug, 1),
+            productImage(seed.name, seed.category, slug, 2),
+          ],
           status: ProductStatus.ACTIVE,
           isFeatured: seed.featured ?? false,
           soldCount: seed.sold ?? 0,

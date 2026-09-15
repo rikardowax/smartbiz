@@ -156,6 +156,31 @@ export class CatalogQueryDto extends PaginationQueryDto {
   @IsString()
   city?: string;
 
+  @ApiPropertyOptional({
+    description: "Plusieurs villes, séparées par des virgules",
+    example: "Douala,Yaoundé",
+  })
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === "string"
+      ? value
+          .split(",")
+          .map((city) => city.trim())
+          .filter(Boolean)
+      : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  cities?: string[];
+
+  @ApiPropertyOptional({ minimum: 1, maximum: 5, description: "Note minimale du produit" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  minRating?: number;
+
   @ApiPropertyOptional({ example: 1000 })
   @IsOptional()
   @Type(() => Number)

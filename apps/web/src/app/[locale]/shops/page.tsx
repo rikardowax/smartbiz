@@ -1,50 +1,46 @@
 "use client";
 
-import { Loader2, MapPin, MessageCircle, Search, Store } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { SalesbotLink } from "@/components/salesbot-link";
+import { FilterCheckbox, FilterSection } from "@/components/marketplace/filter-section";
+import { type PublicShop, ShopCard } from "@/components/shop-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
-
-interface PublicShop {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  city: string;
-  phone: string;
-  whatsappNumber: string | null;
-  _count?: { products: number };
-}
-
-function whatsappLink(phone: string, message: string) {
-  const cleaned = phone.replace(/[^\d]/g, "");
-  return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
-}
+import { cn } from "@/lib/utils";
 
 export default function ShopsPage() {
   const t = useTranslations("marketplace");
   const [shops, setShops] = useState<PublicShop[]>([]);
   const [cities, setCities] = useState<string[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
-  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiFetch<string[]>("/shops/public/cities")
+      .then(setCities)
+      .catch(() => setCities([]));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams();
-      params.set("limit", "24");
+      const params = new URLSearchParams({ limit: "24" });
       if (search.trim()) params.set("search", search.trim());
       if (city) params.set("city", city);
-      const res = await apiFetch<{ items: PublicShop[] }>(`/shops/public?${params.toString()}`);
+      const res = await apiFetch<{ items: PublicShop[]; meta: { total: number } }>(
+        `/shops/public?${params.toString()}`,
+      );
       setShops(res.items || []);
+      setTotal(res.meta?.total ?? res.items?.length ?? 0);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -53,117 +49,139 @@ export default function ShopsPage() {
   }, [search, city, t]);
 
   useEffect(() => {
-    apiFetch<string[]>("/shops/public/cities")
-      .then(setCities)
-      .catch(() => setCities([]));
-  }, []);
-
-  useEffect(() => {
     load();
   }, [load]);
 
-  const applySearch = () => {
-    setSearch(searchInput);
+  const clearAll = () => {
+    setSearchInput("");
+    setSearch("");
+    setCity("");
   };
 
+  const activeCount = (city ? 1 : 0) + (search ? 1 : 0);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{t("shopsTitle")}</h1>
-        <p className="text-muted-foreground">{t("shopsSubtitle")}</p>
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-5">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">{t("shopsTitle")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("shopsSubtitle")}</p>
       </div>
 
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-9"
+            onKeyDown={(e) => e.key === "Enter" && setSearch(searchInput)}
+            className="h-11 pl-9 pr-9"
             placeholder={t("shopsSearchPlaceholder")}
-            onKeyDown={(e) => e.key === "Enter" && applySearch()}
           />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchInput("");
+                setSearch("");
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={t("clearSearch")}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="h-10 appearance-none rounded-lg border border-input bg-background px-4 pr-8 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <option value="">{t("allCities")}</option>
-            {cities.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          <Button onClick={applySearch} disabled={loading} className="shrink-0">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t("search")}
-          </Button>
-        </div>
+        <Button className="h-11 px-6" onClick={() => setSearch(searchInput)}>
+          {t("search")}
+        </Button>
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      <div className="mt-5 lg:grid lg:grid-cols-[232px_1fr] lg:gap-7">
+        <aside
+          className={cn(
+            "mb-5 rounded-xl border border-border bg-card p-4 lg:mb-0 lg:self-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0",
+            !showFilters && "hidden lg:block",
+          )}
+        >
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="text-sm font-semibold text-foreground">{t("filters")}</h2>
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                {t("clearAll")}
+              </button>
+            )}
+          </div>
 
-      {loading && !shops.length ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : shops.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card py-16 text-center">
-          <p className="text-lg font-medium text-card-foreground">{t("noShops")}</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {shops.map((shop) => (
-            <div
-              key={shop.id}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+          {cities.length > 0 && (
+            <FilterSection title={t("city")}>
+              {cities.map((c) => (
+                <FilterCheckbox
+                  key={c}
+                  label={c}
+                  checked={city === c}
+                  onChange={(checked) => setCity(checked ? c : "")}
+                />
+              ))}
+            </FilterSection>
+          )}
+        </aside>
+
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {search
+                ? t("resultsCountFor", { count: total, query: search })
+                : t("resultsCount", { count: total })}
+            </p>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto gap-1.5 lg:hidden"
+              onClick={() => setShowFilters((s) => !s)}
             >
-              <div className="flex h-32 items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 p-6">
-                <Store className="h-12 w-12 text-primary" />
-              </div>
-              <div className="flex flex-1 flex-col p-4">
-                <h3 className="font-semibold text-card-foreground">{shop.name}</h3>
-                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                  {shop.description || "—"}
-                </p>
-                <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  {shop.city}
-                </div>
-                <div className="mt-4 flex flex-1 items-end gap-2">
-                  <Button asChild size="sm" className="flex-1">
-                    <Link href={`/shops/${shop.slug}`}>{t("viewShop")}</Link>
-                  </Button>
-                  <SalesbotLink shopSlug={shop.slug} size="sm" iconOnly className="shrink-0" />
-                  {shop.whatsappNumber && (
-                    <Button asChild size="sm" variant="outline" className="shrink-0">
-                      <a
-                        href={whatsappLink(
-                          shop.whatsappNumber,
-                          `Bonjour ${shop.name}, je voudrais passer une commande.`,
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <SlidersHorizontal className="h-4 w-4" />
+              {t("filters")}
+              {activeCount > 0 && (
+                <span className="rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  {activeCount}
+                </span>
+              )}
+            </Button>
+          </div>
+
+          {error && (
+            <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+              {error}
             </div>
-          ))}
+          )}
+
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : shops.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-card py-16 text-center">
+              <p className="font-medium text-card-foreground">{t("noShops")}</p>
+              {activeCount > 0 && (
+                <Button variant="outline" size="sm" className="mt-4" onClick={clearAll}>
+                  {t("clearAll")}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {shops.map((shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

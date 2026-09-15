@@ -99,6 +99,7 @@ export function ProductImageUpload({ value, onChange, name }: ProductImageUpload
 
       {preview && !loading && (
         <div className="relative mt-3 inline-block">
+          {/* biome-ignore lint/performance/noImgElement: aperçu local en data URL, hors pipeline next/image */}
           <img
             src={preview}
             alt={t("productImage")}

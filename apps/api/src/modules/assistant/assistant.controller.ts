@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { Public } from "../../common/decorators/public.decorator.js";
 import { CurrentUser } from "../../common/decorators/current-user.decorator.js";
+import { Public } from "../../common/decorators/public.decorator.js";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 import { AssistantService } from "./assistant.service.js";

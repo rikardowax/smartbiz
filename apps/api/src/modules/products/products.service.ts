@@ -194,15 +194,20 @@ export class ProductsService {
   // --- Catalogue public ----------------------------------------------------
 
   async findCatalog(query: CatalogQueryDto) {
+    // Le filtre multi-villes prime sur la ville unique : la sidebar de la
+    // marketplace envoie `cities`, les liens de partage envoient `city`.
+    const cities = query.cities?.length ? query.cities : query.city ? [query.city] : [];
+
     const where: Prisma.ProductWhereInput = {
       status: ProductStatus.ACTIVE,
       shop: {
         status: ShopStatus.ACTIVE,
         ...(query.shop ? { slug: query.shop } : {}),
-        ...(query.city ? { city: { equals: query.city, mode: "insensitive" } } : {}),
+        ...(cities.length ? { city: { in: cities, mode: "insensitive" } } : {}),
       },
       ...(query.category ? { category: { slug: query.category } } : {}),
       ...(query.inStockOnly ? { stockQuantity: { gt: 0 } } : {}),
+      ...(query.minRating != null ? { ratingAverage: { gte: query.minRating } } : {}),
       ...(query.minPrice != null || query.maxPrice != null
         ? {
             price: {

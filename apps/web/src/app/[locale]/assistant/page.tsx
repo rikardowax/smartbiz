@@ -19,7 +19,7 @@ export default function AssistantPage() {
   const t = useTranslations("assistant");
   const locale = useLocale();
   const { user } = useAuthStore();
-  const isSeller = user?.role === "SELLER" || user?.role === "ADMIN";
+  const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { id: crypto.randomUUID(), role: "assistant", text: t("greeting") },

@@ -12,12 +12,12 @@ import {
 } from "@google/genai";
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { PrismaService } from "../../prisma/prisma.service.js";
 import { ShopStatus } from "../../generated/prisma/enums.js";
+import { PrismaService } from "../../prisma/prisma.service.js";
 import { DashboardService } from "../dashboard/dashboard.service.js";
 import { CustomersService } from "../partners/customers.service.js";
-import { ProductsService } from "../products/products.service.js";
 import type { CatalogQueryDto } from "../products/dto/product.dto.js";
+import { ProductsService } from "../products/products.service.js";
 
 type AssistantContext = { shopId: string; userId: string; locale: string };
 type BuyerAssistantContext = { locale: string };
@@ -129,7 +129,10 @@ export class AssistantService {
         parametersJsonSchema: {
           type: "object",
           properties: {
-            search: { type: "string", description: "Mots-clés de recherche (nom, catégorie, boutique)" },
+            search: {
+              type: "string",
+              description: "Mots-clés de recherche (nom, catégorie, boutique)",
+            },
             category: { type: "string", description: "Slug de la catégorie" },
             shop: { type: "string", description: "Slug de la boutique" },
             city: { type: "string", description: "Ville du vendeur" },
