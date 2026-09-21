@@ -27,6 +27,21 @@ const DEFAULT_CITIES = [
   "Ngaoundéré",
 ];
 
+const DEFAULT_INTERESTS = [
+  "Alimentation",
+  "Boissons",
+  "Mode & Vêtements",
+  "Chaussures",
+  "Téléphonie & Électronique",
+  "Cosmétique & Beauté",
+  "Santé & Hygiène",
+  "Maison & Cuisine",
+  "Papeterie & Bureau",
+  "Bébé & Enfant",
+  "Sport & Loisirs",
+  "Artisanat",
+];
+
 export function CreateShopForm() {
   const t = useTranslations("erp");
   const router = useRouter();
@@ -41,7 +56,7 @@ export function CreateShopForm() {
   const [description, setDescription] = useState("");
   const [interestInput, setInterestInput] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_INTERESTS);
 
   useEffect(() => {
     apiFetch<string[]>("/shops/public/cities")
@@ -51,8 +66,11 @@ export function CreateShopForm() {
 
   useEffect(() => {
     apiFetch<{ name: string }[]>("/categories")
-      .then((res) => setSuggestions(res.map((c) => c.name)))
-      .catch(() => setSuggestions([]));
+      .then((res) => {
+        const names = res.map((c) => c.name);
+        if (names.length) setSuggestions(names);
+      })
+      .catch(() => {});
   }, []);
 
   const addInterest = (value: string) => {
@@ -72,6 +90,14 @@ export function CreateShopForm() {
       addInterest(interestInput);
     }
   };
+
+  // Filtrées par la saisie et sans les centres déjà choisis.
+  const visibleSuggestions = suggestions
+    .filter((s) => !interests.includes(s))
+    .filter(
+      (s) => !interestInput.trim() || s.toLowerCase().includes(interestInput.trim().toLowerCase()),
+    )
+    .slice(0, 8);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,9 +224,9 @@ export function CreateShopForm() {
               placeholder={t("interestsPlaceholder")}
               disabled={interests.length >= 5}
             />
-            {suggestions.length > 0 && (
+            {visibleSuggestions.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {suggestions.slice(0, 8).map((s) => (
+                {visibleSuggestions.map((s) => (
                   <button
                     key={s}
                     type="button"
