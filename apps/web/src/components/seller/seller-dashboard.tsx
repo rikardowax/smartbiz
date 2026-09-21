@@ -25,6 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSellerShop } from "@/hooks/use-seller-shop";
 import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 
 interface Overview {
@@ -193,8 +194,8 @@ export function SellerDashboard() {
               <AreaChart data={trend}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -207,18 +208,18 @@ export function SellerDashboard() {
                     })
                   }
                   tick={{ fontSize: 11 }}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                 />
                 <YAxis
                   tick={{ fontSize: 11 }}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
                 />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 12,
-                    border: "1px solid hsl(var(--border))",
-                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid var(--border)",
+                    backgroundColor: "var(--card)",
                     boxShadow: "0 4px 12px rgb(0 0 0 / 0.1)",
                   }}
                   labelFormatter={(v) => new Date(v as string).toLocaleDateString()}
@@ -226,7 +227,7 @@ export function SellerDashboard() {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="hsl(var(--primary))"
+                  stroke="var(--primary)"
                   strokeWidth={2.5}
                   fill="url(#colorRevenue)"
                   dot={false}
@@ -283,9 +284,11 @@ function StatCard({
   alert?: boolean;
 }) {
   return (
-    <Card className={alert ? "border-warning/40" : undefined}>
+    <Card className={cn("hover-lift group hover:shadow-lg", alert && "border-warning/40")}>
       <CardContent className="flex items-center gap-4 p-5">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-6deg] ${iconBg}`}
+        >
           <Icon className="h-6 w-6" />
         </div>
         <div>

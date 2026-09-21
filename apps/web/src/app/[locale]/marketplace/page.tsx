@@ -441,7 +441,7 @@ export default function MarketplacePage() {
                 resetLabel={t("clearAll")}
               />
             ) : (
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="animate-grid-in mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}

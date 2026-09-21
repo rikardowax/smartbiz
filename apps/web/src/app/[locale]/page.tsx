@@ -194,7 +194,7 @@ export default function HomePage() {
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="animate-grid-in mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {shops.slice(0, 6).map((shop) => (
                 <ShopCard key={shop.id} shop={shop} />
               ))}
@@ -219,7 +219,7 @@ export default function HomePage() {
           <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">
             {t("whyTitle")}
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="animate-grid-in mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
               icon={ShoppingBag}
               title={t("whyMarketplace")}
@@ -305,7 +305,7 @@ function ProductRow({
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="animate-grid-in mt-5 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.slice(0, 8).map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -325,8 +325,8 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+    <div className="hover-lift group rounded-2xl border border-border/60 bg-card p-6 shadow-sm hover:border-primary/30 hover:shadow-lg">
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-6deg]">
         <Icon className="h-6 w-6" />
       </div>
       <h3 className="text-lg font-semibold text-card-foreground">{title}</h3>

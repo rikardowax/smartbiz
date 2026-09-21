@@ -401,7 +401,7 @@ export default function ProductDetailPage() {
       {product.related.length > 0 && (
         <section className="mt-10">
           <h2 className="text-lg font-bold text-foreground sm:text-xl">{t("relatedProducts")}</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+          <div className="animate-grid-in mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
             {product.related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

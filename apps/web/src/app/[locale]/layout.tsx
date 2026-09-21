@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/header";
+import { PageTransition } from "@/components/layout/page-transition";
 import { Providers } from "@/components/providers";
 import { routing } from "@/i18n/routing";
 
@@ -34,7 +35,9 @@ export default async function LocaleLayout({
     <Providers locale={locale} messages={messages}>
       <div className="relative flex min-h-full flex-col">
         <Header locale={locale} />
-        <main className="flex-1 animate-fade-in-up">{children}</main>
+        <main className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </Providers>
   );

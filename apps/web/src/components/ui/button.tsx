@@ -1,10 +1,12 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui/slot";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "relative overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96]",
   {
     variants: {
       variant: {
@@ -35,15 +37,45 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  /** Désactive l'onde au clic (utile pour les boutons purement textuels). */
+  noRipple?: boolean;
+}
+
+/**
+ * Injecte une onde circulaire au point cliqué. Le nœud est créé et retiré en
+ * DOM direct : pas de state, donc aucun rendu React supplémentaire au clic.
+ */
+function spawnRipple(host: HTMLElement, clientX: number, clientY: number) {
+  const rect = host.getBoundingClientRect();
+  const diameter = Math.max(rect.width, rect.height) * 2.2;
+  const ripple = document.createElement("span");
+  ripple.className = "btn-ripple";
+  ripple.style.width = `${diameter}px`;
+  ripple.style.height = `${diameter}px`;
+  ripple.style.left = `${clientX - rect.left - diameter / 2}px`;
+  ripple.style.top = `${clientY - rect.top - diameter / 2}px`;
+  host.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    { className, variant, size, asChild = false, noRipple = false, onPointerDown, ...props },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
+
+    const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+      onPointerDown?.(event);
+      if (noRipple || variant === "link") return;
+      spawnRipple(event.currentTarget, event.clientX, event.clientY);
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref as React.Ref<HTMLButtonElement>}
+        onPointerDown={handlePointerDown}
         {...props}
       />
     );

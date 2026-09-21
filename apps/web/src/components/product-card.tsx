@@ -86,7 +86,7 @@ export function ProductCard({
   };
 
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border bg-card transition-all duration-200 hover:z-10 hover:border-primary/30 hover:shadow-[0_8px_28px_-6px_rgb(0_0_0/0.15)]">
+    <div className="hover-lift group relative flex flex-col rounded-xl border border-border bg-card hover:z-10 hover:border-primary/40 hover:shadow-[0_14px_40px_-10px_rgb(0_0_0/0.22)]">
       <Link href={productHref} className="absolute inset-0 z-0" aria-label={product.name} />
 
       <div ref={imageRef} className="relative aspect-square overflow-hidden rounded-t-xl bg-muted">
