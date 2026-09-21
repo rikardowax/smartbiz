@@ -2,11 +2,14 @@
 
 import { MapPin, Package, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { useCartAnimation } from "@/components/add-to-cart-animation";
 import { RatingStars } from "@/components/rating-stars";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { discountPercent, formatCompact, formatPrice } from "@/lib/format";
+import { useCartStore } from "@/stores/cart-store";
 
 export interface CatalogProduct {
   id: string;
@@ -48,6 +51,9 @@ export function ProductCard({
 }) {
   const t = useTranslations("marketplace");
   const [imageError, setImageError] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
+  const { triggerFly } = useCartAnimation();
+  const imageRef = useRef<HTMLDivElement>(null);
   const image = product.images?.[0];
   const isPlaceholder = !image || imageError;
   const discount = discountPercent(product.price, product.compareAtPrice);
@@ -57,6 +63,25 @@ export function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      unit: product.unit,
+      quantity: 1,
+      image: product.images?.[0],
+      shop: { name: product.shop.name, slug: product.shop.slug },
+    });
+
+    // Trigger flying animation
+    if (imageRef.current) {
+      triggerFly(imageRef.current, product.images?.[0] ?? null, product.name);
+    }
+
+    toast.success(t("addedToCart", { name: product.name }), { duration: 1500 });
+
     addToCart?.();
   };
 
@@ -64,7 +89,7 @@ export function ProductCard({
     <div className="group relative flex flex-col rounded-xl border border-border bg-card transition-all duration-200 hover:z-10 hover:border-primary/30 hover:shadow-[0_8px_28px_-6px_rgb(0_0_0/0.15)]">
       <Link href={productHref} className="absolute inset-0 z-0" aria-label={product.name} />
 
-      <div className="relative aspect-square overflow-hidden rounded-t-xl bg-muted">
+      <div ref={imageRef} className="relative aspect-square overflow-hidden rounded-t-xl bg-muted">
         {!isPlaceholder ? (
           // biome-ignore lint/performance/noImgElement: images produits hébergées par les vendeurs
           <img
@@ -134,14 +159,9 @@ export function ProductCard({
         </div>
       </div>
 
-      {addToCart && (
+      {!outOfStock && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 translate-y-1 p-3 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
-          <Button
-            size="sm"
-            className="w-full gap-1.5 shadow-md"
-            onClick={handleAddToCart}
-            disabled={outOfStock}
-          >
+          <Button size="sm" className="w-full gap-1.5 shadow-md" onClick={handleAddToCart}>
             <ShoppingCart className="h-3.5 w-3.5" />
             {t("addToCart")}
           </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -33,7 +33,6 @@ export default function RegisterPage() {
       email: z.union([z.literal(""), z.string().email(t("emailInvalid"))]).optional(),
       password: z.string().regex(passwordRegex, t("passwordStrong")),
       confirmPassword: z.string().min(1, t("fieldRequired")),
-      role: z.enum(["ACHETEUR", "VENDEUR"]),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: t("passwordsMatch"),
@@ -52,9 +51,6 @@ export default function RegisterPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      role: "ACHETEUR",
-    },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -63,6 +59,7 @@ export default function RegisterPage() {
       const payload = {
         ...rest,
         email: rest.email || undefined,
+        role: "ACHETEUR" as const,
       };
       const res = await apiFetch<{
         accessToken: string;
@@ -76,7 +73,7 @@ export default function RegisterPage() {
       const me = await apiFetch<User>("/auth/me");
       setUser(me);
       toast.success(t("registerSuccess"));
-      router.push("/dashboard");
+      router.push("/marketplace");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("registerError"));
     }
@@ -90,6 +87,9 @@ export default function RegisterPage() {
 
       <div className="relative z-10 w-full max-w-md animate-fade-in-up rounded-2xl border border-border/60 bg-card/95 p-8 shadow-2xl backdrop-blur-sm">
         <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-lg">
+            <Store className="h-6 w-6" />
+          </div>
           <h1 className="text-2xl font-bold text-card-foreground">{t("registerTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("registerSubtitle")}</p>
         </div>
@@ -186,21 +186,6 @@ export default function RegisterPage() {
             {errors.confirmPassword && (
               <p className="mt-1 text-xs text-destructive">{errors.confirmPassword.message}</p>
             )}
-          </div>
-
-          <div>
-            <Label>{t("role")}</Label>
-            <div className="mt-2 grid grid-cols-2 gap-3 rounded-lg border border-input p-1">
-              {(["ACHETEUR", "VENDEUR"] as const).map((role) => (
-                <label
-                  key={role}
-                  className="flex cursor-pointer items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
-                >
-                  <input type="radio" value={role} {...register("role")} className="sr-only" />
-                  {role === "ACHETEUR" ? t("roleBuyer") : t("roleSeller")}
-                </label>
-              ))}
-            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

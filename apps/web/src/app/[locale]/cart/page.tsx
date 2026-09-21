@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, ShoppingCart, Store, Trash2 } from "lucide-react";
+import { MessageCircle, Minus, Plus, ShoppingCart, Store, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -58,6 +58,20 @@ export default function CartPage() {
                   {shopItems[0].shop.name}
                 </Link>
               </div>
+
+              {shopItems[0].shop.whatsappNumber && (
+                <div className="border-b border-border px-4 py-2">
+                  <a
+                    href={`https://wa.me/${shopItems[0].shop.whatsappNumber.replace(/[^0-9]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 hover:underline"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    {t("contactWhatsApp")} {shopItems[0].shop.name}
+                  </a>
+                </div>
+              )}
 
               <div className="divide-y divide-border">
                 {shopItems.map((item) => (

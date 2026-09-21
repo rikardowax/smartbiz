@@ -3,6 +3,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { CartAnimationProvider } from "@/components/add-to-cart-animation";
 import { BuyerAssistant } from "@/components/buyer-assistant";
 import { FloatingAssistant } from "@/components/floating-assistant";
 import { PwaInstallProvider } from "@/components/pwa-install-context";
@@ -46,11 +47,13 @@ export function Providers({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster richColors closeButton position="top-center" />
-          <PwaInstallPrompt />
-          <FloatingAssistant />
-          <BuyerAssistant />
+          <CartAnimationProvider>
+            {children}
+            <Toaster richColors closeButton position="top-center" />
+            <PwaInstallPrompt />
+            <FloatingAssistant />
+            <BuyerAssistant />
+          </CartAnimationProvider>
         </ThemeProvider>
       </PwaInstallProvider>
     </NextIntlClientProvider>

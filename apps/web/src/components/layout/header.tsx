@@ -3,7 +3,8 @@
 import { LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useCartAnimation } from "@/components/add-to-cart-animation";
 import { PwaInstallButton } from "@/components/pwa-install-button";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -23,6 +24,19 @@ export function Header({ locale }: { locale: string }) {
   const { isAuthenticated, user, logout } = useAuthStore();
   const cartItems = useCartStore((s) => s.items);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  const { cartIconRef } = useCartAnimation();
+  const [cartBounce, setCartBounce] = useState(false);
+
+  // Bounce the cart icon whenever cart count changes
+  const prevCount = useRef(cartCount);
+  useEffect(() => {
+    if (cartCount > prevCount.current) {
+      setCartBounce(true);
+      const timer = setTimeout(() => setCartBounce(false), 400);
+      return () => clearTimeout(timer);
+    }
+    prevCount.current = cartCount;
+  }, [cartCount]);
 
   useEffect(() => {
     setMounted(true);
@@ -31,12 +45,18 @@ export function Header({ locale }: { locale: string }) {
   const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
   const showCart = !isSeller;
 
-  const links = [
-    { href: "/marketplace", label: t("marketplace") },
-    { href: isSeller ? "/dashboard/shops" : "/shops", label: isSeller ? t("myShops") : t("shops") },
+  const buyerLinks = [
+    { href: "/marketplace", label: t("products") },
+    { href: "/shops", label: t("shops") },
+  ];
+
+  const sellerLinks = [
     { href: "/dashboard", label: t("dashboard") },
+    { href: "/dashboard/shops", label: t("myShops") },
     ...(isSeller ? [{ href: "/salesbot", label: t("salesbot") }] : []),
   ];
+
+  const links = isAuthenticated && isSeller ? [...buyerLinks, ...sellerLinks] : buyerLinks;
 
   const handleLogout = async () => {
     const { refreshToken } = useAuthStore.getState();
@@ -107,7 +127,11 @@ export function Header({ locale }: { locale: string }) {
               {showCart && (
                 <Link
                   href="/cart"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  className={cn(
+                    "relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+                    cartBounce && "animate-[cart-bounce_0.4s_ease]",
+                  )}
+                  ref={cartIconRef as React.Ref<HTMLAnchorElement>}
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {cartCount > 0 && (
@@ -118,9 +142,12 @@ export function Header({ locale }: { locale: string }) {
                 </Link>
               )}
 
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+              <Link
+                href="/account/profile"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
+              >
                 {initials || <User className="h-4 w-4" />}
-              </div>
+              </Link>
 
               <Button
                 variant="ghost"
@@ -137,7 +164,11 @@ export function Header({ locale }: { locale: string }) {
               {showCart && (
                 <Link
                   href="/cart"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  className={cn(
+                    "relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+                    cartBounce && "animate-[cart-bounce_0.4s_ease]",
+                  )}
+                  ref={cartIconRef as React.Ref<HTMLAnchorElement>}
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {cartCount > 0 && (

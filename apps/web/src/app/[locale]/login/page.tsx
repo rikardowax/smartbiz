@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -64,6 +64,9 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md animate-fade-in-up rounded-2xl border border-border/60 bg-card/95 p-8 shadow-2xl backdrop-blur-sm">
         <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-lg">
+            <Store className="h-6 w-6" />
+          </div>
           <h1 className="text-2xl font-bold text-card-foreground">{t("loginTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("loginSubtitle")}</p>
         </div>

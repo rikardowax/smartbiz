@@ -193,6 +193,31 @@ export class ProductsService {
 
   // --- Catalogue public ----------------------------------------------------
 
+  /** Categories avec le nombre de produits actifs. */
+  async findCategories() {
+    const categories = await this.prisma.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: {
+          select: {
+            products: {
+              where: { status: ProductStatus.ACTIVE, shop: { status: ShopStatus.ACTIVE } },
+            },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+    return categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      productCount: c._count.products,
+    }));
+  }
+
   async findCatalog(query: CatalogQueryDto) {
     // Le filtre multi-villes prime sur la ville unique : la sidebar de la
     // marketplace envoie `cities`, les liens de partage envoient `city`.

@@ -36,6 +36,13 @@ export class CatalogController {
   }
 
   @Public()
+  @Get("categories")
+  @ApiOperation({ summary: "Liste des catégories avec le nombre de produits actifs" })
+  findCategories() {
+    return this.productsService.findCategories();
+  }
+
+  @Public()
   @Get("highlights")
   @ApiOperation({ summary: "Sélections mises en avant sur la page d'accueil" })
   findHighlights() {
