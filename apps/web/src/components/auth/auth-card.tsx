@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,113 +19,98 @@ import { type User, useAuthStore } from "@/stores/auth-store";
 
 type AuthMode = "login" | "register";
 
-const FLIP_MS = 900;
+const SLIDE_MS = 800;
 
 /**
- * Carte unique qui bascule en 3D entre connexion et inscription.
- * Les deux formulaires restent montés : seule la rotation change, ce qui
- * évite de perdre la saisie en cours quand l'utilisateur hésite.
+ * Carte unique à double slider : les deux formulaires restent montés côte à
+ * côte et un panneau coloré glisse par-dessus pour inviter à basculer.
+ * Sur mobile, le panneau devient un bandeau et les formulaires défilent
+ * horizontalement en dessous.
  */
 export function AuthCard({ initialMode }: { initialMode: AuthMode }) {
   const t = useTranslations("auth");
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [flipping, setFlipping] = useState(false);
-  const [height, setHeight] = useState<number>();
-
-  const loginRef = useRef<HTMLDivElement>(null);
-  const registerRef = useRef<HTMLDivElement>(null);
-
-  // La hauteur suit la face visible : sans cela, la face la plus courte
-  // laisserait un vide sous la carte.
-  const measure = useCallback(() => {
-    const el = mode === "login" ? loginRef.current : registerRef.current;
-    if (el) setHeight(el.offsetHeight);
-  }, [mode]);
-
-  useLayoutEffect(() => {
-    measure();
-  }, [measure]);
-
-  useEffect(() => {
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [measure]);
+  const [switching, setSwitching] = useState(false);
 
   const switchTo = (next: AuthMode) => {
-    if (next === mode || flipping) return;
-    setFlipping(true);
+    if (next === mode || switching) return;
+    setSwitching(true);
     setMode(next);
-    // L'URL suit la face affichée pour que le rafraîchissement et le partage
-    // restent cohérents, sans relancer de navigation Next.
+    // L'URL suit le formulaire affiché pour que le rafraîchissement et le
+    // partage restent cohérents, sans relancer de navigation Next.
     const path = window.location.pathname;
     const target = next === "login" ? "/login" : "/register";
     const source = next === "login" ? "/register" : "/login";
     if (path.endsWith(source)) {
       window.history.replaceState(null, "", path.slice(0, -source.length) + target);
     }
-    setTimeout(() => setFlipping(false), FLIP_MS);
+    setTimeout(() => setSwitching(false), SLIDE_MS);
   };
 
-  const flipped = mode === "register";
+  const registerMode = mode === "register";
 
   return (
     <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden p-4 py-12">
       <AuthBackground />
 
-      <div
-        className={cn(
-          "auth-flip-scene relative z-10 w-full max-w-md",
-          flipping && "animate-flip-dip",
-        )}
-      >
-        {/* Halo qui s'illumine pendant la rotation */}
-        {flipping && (
+      <div className="relative z-10 w-full max-w-md md:max-w-5xl">
+        {/* Halo qui s'illumine pendant la glissade */}
+        {switching && (
           <div className="animate-flip-glow pointer-events-none absolute -inset-8 rounded-[2rem] bg-primary/25 blur-3xl" />
         )}
 
-        <div
-          className={cn("auth-flip-inner relative w-full", flipped && "is-flipped")}
-          style={{ height }}
-        >
+        <div className="relative">
+          <div className="animate-shimmer-border absolute -inset-px rounded-[1.6rem]" />
           <div
-            ref={loginRef}
-            className={cn("auth-face absolute inset-x-0 top-0", flipped && "pointer-events-none")}
-            aria-hidden={flipped}
-          >
-            <AuthShell flipping={flipping} title={t("loginTitle")} subtitle={t("loginSubtitle")}>
-              <LoginForm />
-              <AuthDivider label={t("orContinueWith")} />
-              <GoogleLoginButton />
-              <SwitchPrompt
-                question={t("noAccount")}
-                action={t("registerNow")}
-                onClick={() => switchTo("register")}
-              />
-            </AuthShell>
-          </div>
-
-          <div
-            ref={registerRef}
             className={cn(
-              "auth-face auth-face-back absolute inset-x-0 top-0",
-              !flipped && "pointer-events-none",
+              "auth-slider relative min-h-[660px] rounded-3xl border border-border/40 bg-card shadow-2xl md:min-h-[680px]",
+              registerMode && "is-register",
             )}
-            aria-hidden={!flipped}
           >
-            <AuthShell
-              flipping={flipping}
-              title={t("registerTitle")}
-              subtitle={t("registerSubtitle")}
-            >
-              <RegisterForm />
-              <AuthDivider label={t("orContinueWith")} />
-              <GoogleLoginButton />
-              <SwitchPrompt
-                question={t("hasAccount")}
-                action={t("loginNow")}
-                onClick={() => switchTo("login")}
-              />
-            </AuthShell>
+            {/* Reflet qui traverse la carte au moment de la bascule */}
+            {switching && (
+              <div className="animate-shine-sweep pointer-events-none absolute inset-y-0 z-30 w-1/4 bg-gradient-to-r from-transparent via-white/25 to-transparent dark:via-white/10" />
+            )}
+
+            <div className="auth-form-panel auth-panel-login" aria-hidden={registerMode}>
+              <div className="w-full max-w-sm">
+                <FormHeader title={t("loginTitle")} subtitle={t("loginSubtitle")} />
+                <LoginForm />
+                <AuthDivider label={t("orContinueWith")} />
+                <GoogleLoginButton />
+              </div>
+            </div>
+
+            <div className="auth-form-panel auth-panel-register" aria-hidden={!registerMode}>
+              <div className="w-full max-w-sm">
+                <FormHeader title={t("registerTitle")} subtitle={t("registerSubtitle")} />
+                <RegisterForm />
+                <AuthDivider label={t("orContinueWith")} />
+                <GoogleLoginButton />
+              </div>
+            </div>
+
+            {/* Panneau coulissant qui invite à basculer */}
+            <div className="auth-overlay-container">
+              <div className="auth-overlay bg-brand-gradient animate-gradient-shift">
+                <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
+                <OverlayPanel
+                  side="left"
+                  title={t("panelToLoginTitle")}
+                  text={t("panelToLoginText")}
+                  cta={t("panelToLoginCta")}
+                  onClick={() => switchTo("login")}
+                />
+                <OverlayPanel
+                  side="right"
+                  title={t("panelToRegisterTitle")}
+                  text={t("panelToRegisterText")}
+                  cta={t("panelToRegisterCta")}
+                  onClick={() => switchTo("register")}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -133,38 +118,53 @@ export function AuthCard({ initialMode }: { initialMode: AuthMode }) {
   );
 }
 
-/** Habillage commun aux deux faces : logo, titres, bordure lumineuse. */
-function AuthShell({
+/** Contenu d'une moitié du panneau coulissant : pitch + bouton de bascule. */
+function OverlayPanel({
+  side,
   title,
-  subtitle,
-  flipping,
-  children,
+  text,
+  cta,
+  onClick,
 }: {
+  side: "left" | "right";
   title: string;
-  subtitle: string;
-  flipping: boolean;
-  children: React.ReactNode;
+  text: string;
+  cta: string;
+  onClick: () => void;
 }) {
   return (
-    <div className="relative">
-      <div className="animate-shimmer-border absolute -inset-px rounded-2xl" />
-      {/* Pas de backdrop-filter ici : il aplatit le contexte 3D du flip. */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-8 shadow-2xl">
-        {/* Reflet qui traverse la carte au moment de la bascule */}
-        {flipping && (
-          <div className="animate-shine-sweep pointer-events-none absolute inset-x-0 h-1/3 bg-gradient-to-b from-transparent via-white/25 to-transparent dark:via-white/10" />
-        )}
-
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-lg shadow-primary/25 animate-gradient-shift">
-            <Store className="h-7 w-7" />
-          </div>
-          <h1 className="text-2xl font-bold text-card-foreground">{title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
-        </div>
-
-        {children}
+    <div
+      className={cn(
+        "auth-overlay-panel",
+        side === "left" ? "auth-overlay-left" : "auth-overlay-right",
+      )}
+    >
+      <div className="min-w-0">
+        <h2 className="text-base font-bold leading-tight md:text-3xl">{title}</h2>
+        <p className="mt-1 hidden text-sm text-white/80 md:mt-4 md:block md:leading-relaxed">
+          {text}
+        </p>
       </div>
+      <button
+        type="button"
+        onClick={onClick}
+        className="shrink-0 rounded-full border border-white/60 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white hover:text-primary hover:shadow-lg md:mt-7 md:px-8 md:py-2.5"
+      >
+        {cta}
+      </button>
+    </div>
+  );
+}
+
+/** En-tête de chaque formulaire : logo, titre, sous-titre. */
+function FormHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mb-6 text-center">
+      <div className="animate-gradient-shift mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-lg shadow-primary/25">
+        <Store className="h-6 w-6" />
+      </div>
+      <h1 className="text-2xl font-bold text-card-foreground">{title}</h1>
+      <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
     </div>
   );
 }
@@ -175,29 +175,6 @@ function AuthDivider({ label }: { label: string }) {
       <div className="h-px flex-1 bg-border" />
       <span className="text-xs text-muted-foreground">{label}</span>
       <div className="h-px flex-1 bg-border" />
-    </div>
-  );
-}
-
-function SwitchPrompt({
-  question,
-  action,
-  onClick,
-}: {
-  question: string;
-  action: string;
-  onClick: () => void;
-}) {
-  return (
-    <div className="mt-6 text-center text-sm text-muted-foreground">
-      {question}{" "}
-      <button
-        type="button"
-        onClick={onClick}
-        className="font-semibold text-primary underline-offset-2 hover:underline"
-      >
-        {action}
-      </button>
     </div>
   );
 }
@@ -281,7 +258,7 @@ function LoginForm() {
 
       <Button
         type="submit"
-        className="w-full shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30"
+        className="w-full rounded-full uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30"
         disabled={isSubmitting}
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -440,7 +417,7 @@ function RegisterForm() {
 
       <Button
         type="submit"
-        className="w-full shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30"
+        className="w-full rounded-full uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30"
         disabled={isSubmitting}
       >
         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

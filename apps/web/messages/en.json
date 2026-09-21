@@ -102,7 +102,13 @@
     "confirmPassword": "Confirm password",
     "submitReset": "Reset",
     "resetSuccess": "Password updated. Please log in.",
-    "passwordsMatch": "Passwords must match"
+    "passwordsMatch": "Passwords must match",
+    "panelToLoginTitle": "Welcome back!",
+    "panelToLoginText": "Sign in to access your shops, orders and cart.",
+    "panelToLoginCta": "Sign in",
+    "panelToRegisterTitle": "New to SmartBiz?",
+    "panelToRegisterText": "Create your account in seconds and start ordering from local shops.",
+    "panelToRegisterCta": "Create account"
   },
   "marketplace": {
     "title": "Marketplace",
