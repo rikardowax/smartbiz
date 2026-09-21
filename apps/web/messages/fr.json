@@ -14,6 +14,7 @@
     "dashboard": "Tableau de bord",
     "assistant": "Assistant",
     "salesbot": "SalesBot",
+    "becomeSeller": "Devenir vendeur",
     "logout": "Déconnexion"
   },
   "hero": {
@@ -198,7 +199,10 @@
     "exploreMarketplace": "Explorer la marketplace",
     "openAssistant": "Ouvrir l'assistant",
     "shops": "Mes boutiques",
-    "noShops": "Vous n'avez pas encore de boutique. Créez-en une pour commencer à vendre."
+    "noShops": "Vous n'avez pas encore de boutique. Créez-en une pour commencer à vendre.",
+    "becomeSeller": "Devenir vendeur",
+    "becomeSellerDesc": "Ouvrez votre boutique et commencez à vendre sur la marketplace.",
+    "becomeSellerCta": "Ouvrir ma boutique"
   },
   "assistant": {
     "title": "Assistant SmartBiz",

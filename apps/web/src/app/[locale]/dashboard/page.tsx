@@ -7,6 +7,7 @@ import {
   Package,
   ShoppingBag,
   ShoppingCart,
+  Store,
   Truck,
   Users,
   Wallet,
@@ -85,7 +86,7 @@ export default function DashboardPage() {
         <p className="mt-2 text-primary-foreground/90">{t("subtitleBuyer")}</p>
       </div>
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <ActionCard
           icon={ShoppingBag}
           title="Marketplace"
@@ -99,6 +100,13 @@ export default function DashboardPage() {
           description="Posez vos questions à l'assistant intelligent."
           href="/assistant"
           cta={t("openAssistant")}
+        />
+        <ActionCard
+          icon={Store}
+          title={t("becomeSeller")}
+          description={t("becomeSellerDesc")}
+          href="/become-seller"
+          cta={t("becomeSellerCta")}
         />
       </div>
     </div>

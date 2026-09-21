@@ -46,7 +46,7 @@ export default function CartPage() {
       </p>
 
       <div className="mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
-        <div className="space-y-4">
+        <div className="animate-slide-in-stagger space-y-4">
           {Array.from(byShop.entries()).map(([shopSlug, shopItems]) => (
             <div key={shopSlug} className="rounded-xl border border-border bg-card">
               <div className="flex items-center gap-2 border-b border-border px-4 py-3">

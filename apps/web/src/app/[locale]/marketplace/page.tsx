@@ -441,7 +441,10 @@ export default function MarketplacePage() {
                 resetLabel={t("clearAll")}
               />
             ) : (
-              <div className="animate-grid-in mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              <div
+                key={products.map((p) => p.id).join(",")}
+                className="animate-grid-in mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+              >
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -469,7 +472,10 @@ export default function MarketplacePage() {
               resetLabel={t("clearAll")}
             />
           ) : (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div
+              key={shops.map((s) => s.id).join(",")}
+              className="animate-grid-in mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+            >
               {shops.map((shop) => (
                 <ShopCard key={shop.id} shop={shop} />
               ))}

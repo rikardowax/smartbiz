@@ -24,7 +24,7 @@ export function Header({ locale }: { locale: string }) {
   const { isAuthenticated, user, logout } = useAuthStore();
   const cartItems = useCartStore((s) => s.items);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
-  const { cartIconRef } = useCartAnimation();
+  const { cartIconRef, cartIconMobileRef } = useCartAnimation();
   const [cartBounce, setCartBounce] = useState(false);
 
   // Bounce the cart icon whenever cart count changes
@@ -142,6 +142,12 @@ export function Header({ locale }: { locale: string }) {
                 </Link>
               )}
 
+              {!isSeller && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/become-seller">{t("becomeSeller")}</Link>
+                </Button>
+              )}
+
               <Link
                 href="/account/profile"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
@@ -195,7 +201,11 @@ export function Header({ locale }: { locale: string }) {
           {showCart && (
             <Link
               href="/cart"
-              className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              className={cn(
+                "relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+                cartBounce && "animate-[cart-bounce_0.4s_ease]",
+              )}
+              ref={cartIconMobileRef as React.Ref<HTMLAnchorElement>}
             >
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
@@ -239,6 +249,11 @@ export function Header({ locale }: { locale: string }) {
                 <div className="mt-2 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground">
                   {user?.firstName} {user?.lastName}
                 </div>
+                {!isSeller && (
+                  <Button asChild variant="outline">
+                    <Link href="/become-seller">{t("becomeSeller")}</Link>
+                  </Button>
+                )}
                 <Button onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   {t("logout")}

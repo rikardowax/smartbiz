@@ -14,6 +14,7 @@
     "dashboard": "Dashboard",
     "assistant": "Assistant",
     "salesbot": "SalesBot",
+    "becomeSeller": "Become a seller",
     "logout": "Logout"
   },
   "hero": {
@@ -198,7 +199,10 @@
     "exploreMarketplace": "Explore marketplace",
     "openAssistant": "Open assistant",
     "shops": "My shops",
-    "noShops": "You don't have a shop yet. Create one to start selling."
+    "noShops": "You don't have a shop yet. Create one to start selling.",
+    "becomeSeller": "Become a seller",
+    "becomeSellerDesc": "Open your shop and start selling on the marketplace.",
+    "becomeSellerCta": "Open my shop"
   },
   "assistant": {
     "title": "SmartBiz Assistant",

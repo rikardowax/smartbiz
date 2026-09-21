@@ -13,12 +13,15 @@ interface FlyingItem {
 interface CartAnimationContextValue {
   /** Register the cart icon element so we know where to fly items. */
   cartIconRef: React.RefObject<HTMLElement | null>;
+  /** Mobile variant : les deux icônes coexistent dans le DOM, une seule est visible. */
+  cartIconMobileRef: React.RefObject<HTMLElement | null>;
   /** Trigger a flying animation from a source element. */
   triggerFly: (sourceEl: HTMLElement, image: string | null, name: string) => void;
 }
 
 const CartAnimationContext = createContext<CartAnimationContextValue>({
   cartIconRef: { current: null },
+  cartIconMobileRef: { current: null },
   triggerFly: () => {},
 });
 
@@ -28,6 +31,7 @@ export function useCartAnimation() {
 
 export function CartAnimationProvider({ children }: { children: React.ReactNode }) {
   const cartIconRef = useRef<HTMLElement | null>(null);
+  const cartIconMobileRef = useRef<HTMLElement | null>(null);
   const [items, setItems] = useState<FlyingItem[]>([]);
   const counterRef = useRef(0);
 
@@ -51,34 +55,51 @@ export function CartAnimationProvider({ children }: { children: React.ReactNode 
   }, []);
 
   return (
-    <CartAnimationContext value={{ cartIconRef, triggerFly }}>
+    <CartAnimationContext value={{ cartIconRef, cartIconMobileRef, triggerFly }}>
       {children}
       {/* Render flying items */}
       {items.map((item) => (
-        <FlyingElement key={item.id} item={item} cartIconRef={cartIconRef} />
+        <FlyingElement
+          key={item.id}
+          item={item}
+          cartIconRef={cartIconRef}
+          cartIconMobileRef={cartIconMobileRef}
+        />
       ))}
     </CartAnimationContext>
   );
 }
 
+/** Premier élément visible : une icône masquée (display:none) a un rect vide. */
+function visibleCartEl(...els: (HTMLElement | null)[]): { x: number; y: number } | null {
+  for (const el of els) {
+    if (!el) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0) {
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    }
+  }
+  return null;
+}
+
 function FlyingElement({
   item,
   cartIconRef,
+  cartIconMobileRef,
 }: {
   item: FlyingItem;
   cartIconRef: React.RefObject<HTMLElement | null>;
+  cartIconMobileRef: React.RefObject<HTMLElement | null>;
 }) {
   const elRef = useRef<HTMLDivElement>(null);
 
   // Calculate target position
-  const cartEl = cartIconRef.current;
-  let tx = window.innerWidth - 60;
-  let ty = 32;
-  if (cartEl) {
-    const cartRect = cartEl.getBoundingClientRect();
-    tx = cartRect.left + cartRect.width / 2;
-    ty = cartRect.top + cartRect.height / 2;
-  }
+  const target = visibleCartEl(cartIconRef.current, cartIconMobileRef.current) ?? {
+    x: window.innerWidth - 60,
+    y: 32,
+  };
+  const tx = target.x;
+  const ty = target.y;
 
   const dx = tx - item.x;
   const dy = ty - item.y;

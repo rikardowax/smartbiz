@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { type User, useAuthStore } from "@/stores/auth-store";
@@ -28,6 +29,7 @@ const DEFAULT_CITIES = [
 
 export function CreateShopForm() {
   const t = useTranslations("erp");
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,6 +97,7 @@ export function CreateShopForm() {
       const me = await apiFetch<User>("/auth/me");
       setUser(me);
       toast.success(t("createShopSuccess"));
+      router.push("/dashboard");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("error"));
     } finally {

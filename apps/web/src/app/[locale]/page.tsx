@@ -20,6 +20,7 @@ import { type PublicShop, ShopCard } from "@/components/shop-card";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface Category {
   id: string;
@@ -61,6 +62,18 @@ export default function HomePage() {
   const [highlights, setHighlights] = useState<Highlights | null>(null);
   const [shops, setShops] = useState<PublicShop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, user } = useAuthStore();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Les CTA vendeur s'adaptent à la session : inscription si anonyme,
+  // création de boutique si acheteur connecté, ERP si déjà vendeur.
+  const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
+  const sellerHref =
+    mounted && isAuthenticated ? (isSeller ? "/dashboard" : "/become-seller") : "/register";
 
   useEffect(() => {
     const load = async () => {
@@ -134,7 +147,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-              <Link href="/register">{t("ctaSeller")}</Link>
+              <Link href={sellerHref}>{t("ctaSeller")}</Link>
             </Button>
           </div>
         </div>
@@ -255,7 +268,7 @@ export default function HomePage() {
           </h2>
           <p className="mt-3 text-muted-foreground">{t("sellerCTADesc")}</p>
           <Button asChild size="lg" className="mt-6">
-            <Link href="/register">
+            <Link href={sellerHref}>
               {t("sellerCTAButton")}
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
