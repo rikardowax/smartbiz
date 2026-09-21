@@ -39,7 +39,7 @@ export function FilterSection({
   );
 }
 
-/** Case à cocher carrée, remplie en orange quand elle est active. */
+/** Case à cocher carrée, remplie à la couleur de marque quand elle est active. */
 export function FilterCheckbox({
   label,
   checked,

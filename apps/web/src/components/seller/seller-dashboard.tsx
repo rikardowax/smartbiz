@@ -124,13 +124,14 @@ export function SellerDashboard() {
         />
         <StatCard
           icon={ShoppingCart}
-          iconBg="bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400"
+          iconBg="bg-primary/10 text-primary"
           title={t("todayOrders")}
           value={overview.today.orderCount.toString()}
         />
+        {/* Ambre conservé : c'est un signal d'alerte, pas la couleur de marque. */}
         <StatCard
           icon={AlertTriangle}
-          iconBg="bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400"
+          iconBg="bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400"
           title={t("pendingOrders")}
           value={overview.operations.pendingOrders.toString()}
           alert={overview.operations.pendingOrders > 0}

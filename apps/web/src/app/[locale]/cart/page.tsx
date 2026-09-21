@@ -65,7 +65,7 @@ export default function CartPage() {
                     href={`https://wa.me/${shopItems[0].shop.whatsappNumber.replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#128C7E] hover:underline dark:text-[#25D366]"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     {t("contactWhatsApp")} {shopItems[0].shop.name}
