@@ -2,7 +2,7 @@
 
 import { ChevronRight, Loader2, MapPin, MessageCircle, Phone, Store } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
 import { RatingStars } from "@/components/rating-stars";
@@ -52,6 +52,7 @@ const SORTS = ["popular", "recent", "price_asc", "price_desc"] as const;
 
 export default function ShopPage() {
   const t = useTranslations("marketplace");
+  const locale = useLocale();
   const { slug } = useParams<{ slug: string }>();
   const addItem = useCartStore((s) => s.addItem);
   const [shop, setShop] = useState<PublicShop | null>(null);
@@ -121,7 +122,7 @@ export default function ShopPage() {
     );
   }
 
-  const whatsappMessage = `Bonjour ${shop.name}, je voudrais commander un produit.`;
+  const whatsappMessage = t("whatsappShop", { name: shop.name });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -270,7 +271,7 @@ export default function ShopPage() {
                       "—"}
                   </span>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                    {new Date(review.createdAt).toLocaleDateString(locale)}
                   </span>
                 </div>
                 {review.comment && (

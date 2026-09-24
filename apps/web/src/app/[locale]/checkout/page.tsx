@@ -80,7 +80,7 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      await apiFetch("/orders/checkout", {
+      const created = await apiFetch<{ orders: { orderNumber: string }[] }>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -94,7 +94,16 @@ export default function CheckoutPage() {
       });
       clear();
       toast.success(t("orderSuccess"));
-      router.push("/marketplace");
+      // Une commande par boutique : on suit la première, la liste complète est
+      // accessible depuis le compte ou via /track pour les invités.
+      const first = created.orders?.[0];
+      if (first?.orderNumber) {
+        router.push(
+          `/track?n=${encodeURIComponent(first.orderNumber)}&p=${encodeURIComponent(contactPhone.trim())}`,
+        );
+      } else {
+        router.push("/marketplace");
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("error"));
     } finally {

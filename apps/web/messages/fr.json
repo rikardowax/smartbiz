@@ -16,7 +16,9 @@
     "salesbot": "SalesBot",
     "becomeSeller": "Devenir vendeur",
     "logout": "Déconnexion",
-    "admin": "Administration"
+    "admin": "Administration",
+    "notifications": "Notifications",
+    "language": "Langue"
   },
   "hero": {
     "title": "Tout le commerce de votre ville, <accent>en ligne.</accent>",
@@ -207,7 +209,9 @@
     "subtotalQty": "Sous-total ({count} article(s))",
     "discountLabel": "Remise",
     "total": "Total",
-    "noShopReviewYet": "Aucun avis pour cette boutique pour le moment."
+    "noShopReviewYet": "Aucun avis pour cette boutique pour le moment.",
+    "whatsappShop": "Bonjour {name}, je voudrais passer une commande.",
+    "whatsappProduct": "Bonjour {shop}, je suis intéressé par « {product} » ({price})."
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -220,7 +224,9 @@
     "noShops": "Vous n'avez pas encore de boutique. Créez-en une pour commencer à vendre.",
     "becomeSeller": "Devenir vendeur",
     "becomeSellerDesc": "Ouvrez votre boutique et commencez à vendre sur la marketplace.",
-    "becomeSellerCta": "Ouvrir ma boutique"
+    "becomeSellerCta": "Ouvrir ma boutique",
+    "assistantCardDesc": "Posez vos questions à l'assistant intelligent.",
+    "browseMarketplaceDesc": "Parcourez et commandez des produits."
   },
   "assistant": {
     "title": "Assistant SmartBiz",
@@ -412,7 +418,8 @@
     "search": "Rechercher",
     "noResults": "Aucun résultat",
     "loading": "Chargement...",
-    "error": "Une erreur est survenue"
+    "error": "Une erreur est survenue",
+    "byCategory": "Par catégorie"
   },
   "account": {
     "profile": "Infos perso",
@@ -451,7 +458,9 @@
     "currentLanguage": "Langue actuelle",
     "security": "Sécurité",
     "changePassword": "Modifier le mot de passe",
-    "dangerZone": "Zone dangereuse"
+    "dangerZone": "Zone dangereuse",
+    "ordersTitle": "Mes commandes",
+    "orders": "Commandes"
   },
   "common": {
     "loading": "Chargement...",
@@ -588,5 +597,49 @@
     "loginRequired": "Connectez-vous pour laisser un avis",
     "loginButton": "Se connecter",
     "verifiedNote": "Avis réservé aux clients ayant reçu une commande."
+  },
+  "orders": {
+    "loginToSee": "Connectez-vous pour voir vos commandes",
+    "empty": "Aucune commande",
+    "emptyDesc": "Vos commandes passées apparaîtront ici.",
+    "browse": "Découvrir le catalogue",
+    "status": {
+      "PENDING": "En attente",
+      "CONFIRMED": "Confirmée",
+      "PREPARING": "En préparation",
+      "SHIPPED": "Expédiée",
+      "DELIVERED": "Livrée",
+      "CANCELLED": "Annulée"
+    },
+    "statusShort": {
+      "PENDING": "Reçue",
+      "CONFIRMED": "Confirmée",
+      "PREPARING": "Préparation",
+      "SHIPPED": "Expédiée",
+      "DELIVERED": "Livrée",
+      "CANCELLED": "Annulée"
+    }
+  },
+  "notifications": {
+    "pushTitle": "Notifications push",
+    "pushDesc": "Recevez les nouvelles commandes et mises à jour sur cet appareil.",
+    "pushDenied": "Notifications bloquées par le navigateur — autorisez-les dans les paramètres du site.",
+    "pushEnable": "Activer",
+    "pushDisable": "Désactiver",
+    "pushEnabled": "Notifications activées sur cet appareil",
+    "pushDisabled": "Notifications désactivées",
+    "pushError": "Impossible d'activer les notifications"
+  },
+  "track": {
+    "title": "Suivre ma commande",
+    "subtitle": "Entrez le numéro de commande et le téléphone utilisés lors de la commande.",
+    "orderNumber": "Numéro de commande",
+    "phone": "Téléphone de livraison",
+    "track": "Suivre",
+    "error": "Commande introuvable — vérifiez le numéro et le téléphone.",
+    "progress": "Progression",
+    "history": "Historique",
+    "items": "Contenu de la commande",
+    "total": "Total"
   }
 }

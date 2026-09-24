@@ -1,4 +1,4 @@
-const CACHE_NAME = "smartbiz-v4";
+const CACHE_NAME = "smartbiz-v5";
 const PRECACHE = [
   "/",
   "/fr",
@@ -72,4 +72,40 @@ self.addEventListener("fetch", (event) => {
 
   // HTML navigations and other pages : prefer network for updates, fallback on cache.
   event.respondWith(networkFirst(event.request));
+});
+
+// --- Notifications push -------------------------------------------------------
+
+self.addEventListener("push", (event) => {
+  let data = { title: "SmartBiz", body: "", url: "/" };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    // Corps non-JSON : on garde les valeurs par défaut.
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || "/icons/icon-192.png",
+      badge: data.badge || "/icons/icon-192.png",
+      data: { url: data.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) {
+          client.navigate(target);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(target);
+    }),
+  );
 });

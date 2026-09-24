@@ -39,11 +39,11 @@ export class CancelOrderDto {
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @ApiBearerAuth()
+  @Public()
   @Post("checkout")
-  @ApiOperation({ summary: "Valider le panier (une commande par boutique)" })
-  checkout(@CurrentUser("id") userId: string, @Body() dto: CheckoutDto) {
-    return this.ordersService.checkout(userId, dto);
+  @ApiOperation({ summary: "Valider le panier (une commande par boutique, invité accepté)" })
+  checkout(@CurrentUser("id") userId: string | undefined, @Body() dto: CheckoutDto) {
+    return this.ordersService.checkout(userId ?? null, dto);
   }
 
   @ApiBearerAuth()

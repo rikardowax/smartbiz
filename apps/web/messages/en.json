@@ -16,7 +16,9 @@
     "salesbot": "SalesBot",
     "becomeSeller": "Become a seller",
     "logout": "Logout",
-    "admin": "Administration"
+    "admin": "Administration",
+    "notifications": "Notifications",
+    "language": "Language"
   },
   "hero": {
     "title": "All your city's shops, <accent>online.</accent>",
@@ -207,7 +209,9 @@
     "subtotalQty": "Subtotal ({count} item(s))",
     "discountLabel": "Discount",
     "total": "Total",
-    "noShopReviewYet": "No reviews for this shop yet."
+    "noShopReviewYet": "No reviews for this shop yet.",
+    "whatsappShop": "Hello {name}, I would like to place an order.",
+    "whatsappProduct": "Hello {shop}, I'm interested in \"{product}\" ({price})."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -220,7 +224,9 @@
     "noShops": "You don't have a shop yet. Create one to start selling.",
     "becomeSeller": "Become a seller",
     "becomeSellerDesc": "Open your shop and start selling on the marketplace.",
-    "becomeSellerCta": "Open my shop"
+    "becomeSellerCta": "Open my shop",
+    "assistantCardDesc": "Ask the smart assistant your questions.",
+    "browseMarketplaceDesc": "Browse and order products."
   },
   "assistant": {
     "title": "SmartBiz Assistant",
@@ -412,7 +418,8 @@
     "search": "Search",
     "noResults": "No results",
     "loading": "Loading...",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "byCategory": "By category"
   },
   "account": {
     "profile": "User info",
@@ -451,7 +458,9 @@
     "currentLanguage": "Current language",
     "security": "Security",
     "changePassword": "Change password",
-    "dangerZone": "Danger zone"
+    "dangerZone": "Danger zone",
+    "ordersTitle": "My orders",
+    "orders": "Orders"
   },
   "common": {
     "loading": "Loading...",
@@ -588,5 +597,49 @@
     "loginRequired": "Log in to leave a review",
     "loginButton": "Log in",
     "verifiedNote": "Reviews are reserved for customers who received an order."
+  },
+  "orders": {
+    "loginToSee": "Log in to see your orders",
+    "empty": "No orders yet",
+    "emptyDesc": "Your past orders will show up here.",
+    "browse": "Browse the catalog",
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "PREPARING": "Preparing",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    },
+    "statusShort": {
+      "PENDING": "Received",
+      "CONFIRMED": "Confirmed",
+      "PREPARING": "Preparing",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "notifications": {
+    "pushTitle": "Push notifications",
+    "pushDesc": "Get new orders and updates on this device.",
+    "pushDenied": "Notifications are blocked by the browser — allow them in the site settings.",
+    "pushEnable": "Enable",
+    "pushDisable": "Disable",
+    "pushEnabled": "Notifications enabled on this device",
+    "pushDisabled": "Notifications disabled",
+    "pushError": "Could not enable notifications"
+  },
+  "track": {
+    "title": "Track my order",
+    "subtitle": "Enter the order number and phone number used at checkout.",
+    "orderNumber": "Order number",
+    "phone": "Delivery phone",
+    "track": "Track",
+    "error": "Order not found — check the number and phone.",
+    "progress": "Progress",
+    "history": "History",
+    "items": "Order items",
+    "total": "Total"
   }
 }

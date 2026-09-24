@@ -48,3 +48,8 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
 
   reset: () => set({ ids: [], loaded: false }),
 }));
+
+// Les cœurs appartiennent à la session : à la déconnexion on vide tout.
+useAuthStore.subscribe((state) => {
+  if (!state.isAuthenticated) useFavoritesStore.getState().reset();
+});

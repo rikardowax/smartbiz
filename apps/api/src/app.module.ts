@@ -13,6 +13,7 @@ import { CategoriesModule } from "./modules/categories/categories.module.js";
 import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
 import { FavoritesModule } from "./modules/favorites/favorites.module.js";
 import { FinanceModule } from "./modules/finance/finance.module.js";
+import { NotificationsModule } from "./modules/notifications/notifications.module.js";
 import { OrdersModule } from "./modules/orders/orders.module.js";
 import { PartnersModule } from "./modules/partners/partners.module.js";
 import { ProductsModule } from "./modules/products/products.module.js";
@@ -44,6 +45,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     SalesbotModule,
     AdminModule,
     FavoritesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

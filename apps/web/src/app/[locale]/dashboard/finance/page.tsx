@@ -92,7 +92,7 @@ export default function FinancePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Par catégorie</CardTitle>
+          <CardTitle>{t("byCategory")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-border">

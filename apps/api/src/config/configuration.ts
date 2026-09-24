@@ -122,6 +122,11 @@ export const configuration = () => {
       verifyToken: process.env.WHATSAPP_VERIFY_TOKEN ?? "",
       apiVersion: process.env.WHATSAPP_API_VERSION ?? "v20.0",
     },
+    vapid: {
+      publicKey: process.env.VAPID_PUBLIC_KEY ?? "",
+      privateKey: process.env.VAPID_PRIVATE_KEY ?? "",
+      subject: process.env.VAPID_SUBJECT ?? "mailto:contact@smartbiz.cm",
+    },
   };
 };
 

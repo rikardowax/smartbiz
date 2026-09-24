@@ -90,14 +90,14 @@ export default function DashboardPage() {
         <ActionCard
           icon={ShoppingBag}
           title="Marketplace"
-          description="Parcourez et commandez des produits."
+          description={t("browseMarketplaceDesc")}
           href="/marketplace"
           cta={t("exploreMarketplace")}
         />
         <ActionCard
           icon={Bot}
           title="Assistant"
-          description="Posez vos questions à l'assistant intelligent."
+          description={t("assistantCardDesc")}
           href="/assistant"
           cta={t("openAssistant")}
         />

@@ -12,6 +12,7 @@ import {
   TransactionType,
 } from "../../generated/prisma/enums.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { CustomersService } from "../partners/customers.service.js";
 import type {
   CheckoutDto,
@@ -69,6 +70,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly customers: CustomersService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -323,6 +325,19 @@ export class OrdersService {
       }
     });
 
+    // L'acheteur connecté est prévenu à chaque étape du cycle de commande
+    // (les commandes WhatsApp invitées n'ont pas de compte — rien à notifier).
+    if (order.buyerId && order.buyerId !== userId) {
+      this.notifications
+        .notify(order.buyerId, {
+          type: "ORDER_STATUS",
+          title: `Commande ${order.orderNumber}`,
+          body: STATUS_LABELS[dto.status],
+          link: "/account/orders",
+        })
+        .catch(() => {});
+    }
+
     return this.findOneForShop(shopId, orderId);
   }
 
@@ -405,6 +420,12 @@ export class OrdersService {
     discount: number;
     initialStatus?: OrderStatus;
   }) {
+    // Récupéré en amont pour pouvoir pousser l'alerte après la transaction.
+    const shop = await this.prisma.shop.findUniqueOrThrow({
+      where: { id: input.shopId },
+      select: { ownerId: true, name: true },
+    });
+
     const lines = input.items.map((item) => {
       const product = input.products.get(item.productId)!;
       return {
@@ -422,7 +443,7 @@ export class OrdersService {
     const status = input.initialStatus ?? OrderStatus.PENDING;
     const now = new Date();
 
-    return this.prisma.$transaction(async (tx) => {
+    const created = await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
           orderNumber: generateOrderNumber(),
@@ -500,22 +521,30 @@ export class OrdersService {
       }
 
       // Notifie le vendeur pour qu'il traite la commande sans délai.
-      const shop = await tx.shop.findUniqueOrThrow({
-        where: { id: input.shopId },
-        select: { ownerId: true, name: true },
-      });
       await tx.notification.create({
         data: {
           userId: shop.ownerId,
           type: "NEW_ORDER",
           title: "Nouvelle commande",
           body: `${input.contactName} a commandé pour ${total.toLocaleString("fr-FR")} FCFA`,
-          link: "/vendeur/commandes",
+          link: "/dashboard/orders",
         },
       });
 
       return order;
     });
+
+    // Push hors transaction : les vendeurs reçoivent l'alerte sur leurs appareils.
+    this.notifications
+      .sendPushToUser(shop.ownerId, {
+        type: "NEW_ORDER",
+        title: "Nouvelle commande",
+        body: `${input.contactName} a commandé pour ${total.toLocaleString("fr-FR")} FCFA`,
+        link: "/dashboard/orders",
+      })
+      .catch(() => {});
+
+    return created;
   }
 
   /** Charge et valide les produits du panier (existence, publication, stock). */

@@ -14,7 +14,15 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
+    if (isPublic) {
+      // Auth optionnelle : sur une route publique on tente quand même
+      // passport pour peupler req.user quand un token valide est présent
+      // (ex. checkout connecté vs invité). Un token absent/invalide
+      // ne bloque jamais l'accès.
+      return Promise.resolve(super.canActivate(context))
+        .then(() => true)
+        .catch(() => true);
+    }
     return super.canActivate(context);
   }
 }

@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/auth-store";
 
 const menuItems = [
   { href: "/account/profile", icon: User, key: "profile" },
+  { href: "/account/orders", icon: ShoppingBag, key: "orders" },
   { href: "/account/favorites", icon: Heart, key: "favorites" },
   { href: "/account/notifications", icon: Bell, key: "notifications" },
   { href: "/account/settings", icon: Settings, key: "settings" },

@@ -4,7 +4,7 @@ import { Globe, Lock, LogOut, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -82,10 +82,10 @@ export default function SettingsPage() {
         <h3 className="text-lg font-semibold text-card-foreground">{t("security")}</h3>
         <div className="mt-4">
           <Button variant="outline" size="sm" asChild>
-            <a href="/forgot-password" className="flex items-center gap-2">
+            <Link href="/forgot-password" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
               {t("changePassword")}
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

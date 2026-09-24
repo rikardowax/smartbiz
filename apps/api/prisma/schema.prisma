@@ -120,6 +120,7 @@ model User {
   refreshTokens         RefreshToken[]
   passwordResets        PasswordResetToken[]
   notifications         Notification[]
+  pushSubscriptions     PushSubscription[]
   assistantConversation AssistantConversation[]
   orderEvents           OrderEvent[]
 
@@ -567,4 +568,17 @@ model Notification {
 
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  keys      Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

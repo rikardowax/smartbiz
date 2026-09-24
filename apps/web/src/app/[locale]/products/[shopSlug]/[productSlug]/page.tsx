@@ -13,7 +13,7 @@ import {
   Store,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { FavoriteButton } from "@/components/favorite-button";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
@@ -91,6 +91,7 @@ function SpecRow({ label, value, mono = false }: { label: string; value: string;
 
 export default function ProductDetailPage() {
   const t = useTranslations("marketplace");
+  const locale = useLocale();
   const { shopSlug, productSlug } = useParams<{ shopSlug: string; productSlug: string }>();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -124,8 +125,12 @@ export default function ProductDetailPage() {
 
   const whatsappMessage = useMemo(() => {
     if (!product) return "";
-    return `Bonjour ${product.shop.name}, je suis intéressé par "${product.name}" (${formatPrice(product.price)}).`;
-  }, [product]);
+    return t("whatsappProduct", {
+      shop: product.shop.name,
+      product: product.name,
+      price: formatPrice(product.price),
+    });
+  }, [product, t]);
 
   const handleAddToCart = () => {
     if (!product || product.stockQuantity <= 0) return;
@@ -293,7 +298,7 @@ export default function ProductDetailPage() {
                         {reviewerName(review.user)}
                       </span>
                       <span className="ml-auto text-xs text-muted-foreground">
-                        {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                        {new Date(review.createdAt).toLocaleDateString(locale)}
                       </span>
                     </div>
                     {review.comment && (

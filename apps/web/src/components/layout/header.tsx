@@ -1,6 +1,17 @@
 "use client";
 
-import { ChevronRight, LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-react";
+import {
+  Bell,
+  ChevronRight,
+  LogOut,
+  Menu,
+  Moon,
+  ShoppingCart,
+  Store,
+  Sun,
+  User,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +38,30 @@ export function Header({ locale }: { locale: string }) {
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
   const { cartIconRef, cartIconMobileRef } = useCartAnimation();
   const [cartBounce, setCartBounce] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Badge de notifications non lues — sondé toutes les 60 s, et rafraîchi
+  // à chaque navigation (pathname) pour refléter une lecture récente.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname sert de signal de rafraîchissement
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
+    let cancelled = false;
+    const poll = () =>
+      apiFetch<number>("/notifications/unread-count")
+        .then((count) => {
+          if (!cancelled) setUnreadCount(count);
+        })
+        .catch(() => {});
+    poll();
+    const timer = setInterval(poll, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [isAuthenticated, pathname]);
 
   // Bounce the cart icon whenever cart count changes
   const prevCount = useRef(cartCount);
@@ -151,6 +186,18 @@ export function Header({ locale }: { locale: string }) {
 
           {mounted && isAuthenticated ? (
             <div className="flex items-center gap-2">
+              <Link
+                href="/account/notifications"
+                aria-label={t("notifications")}
+                className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[10px] font-bold text-destructive-foreground">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               {showCart && (
                 <Link
                   href="/cart"
@@ -225,6 +272,20 @@ export function Header({ locale }: { locale: string }) {
 
         <div className="flex items-center gap-2 md:hidden">
           <PwaInstallButton />
+          {mounted && isAuthenticated && (
+            <Link
+              href="/account/notifications"
+              aria-label={t("notifications")}
+              className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
           {showCart && (
             <Link
               href="/cart"
@@ -388,7 +449,9 @@ export function Header({ locale }: { locale: string }) {
                 <span className="flex h-5 items-center text-sm font-bold uppercase">
                   {otherLocale}
                 </span>
-                <span className="text-[10px] font-medium uppercase tracking-wide">Langue</span>
+                <span className="text-[10px] font-medium uppercase tracking-wide">
+                  {t("language")}
+                </span>
               </button>
             </div>
           </div>,

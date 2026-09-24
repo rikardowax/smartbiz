@@ -70,10 +70,7 @@ export function ShopCard({ shop }: { shop: PublicShop }) {
         {shop.whatsappNumber && (
           <Button asChild size="sm" variant="outline" className="shrink-0">
             <a
-              href={whatsappLink(
-                shop.whatsappNumber,
-                `Bonjour ${shop.name}, je voudrais passer une commande.`,
-              )}
+              href={whatsappLink(shop.whatsappNumber, t("whatsappShop", { name: shop.name }))}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t("contactWhatsApp")}
