@@ -190,7 +190,18 @@
     "loginToCheckout": "Connectez-vous pour finaliser votre commande",
     "orderSuccess": "Commande passée avec succès",
     "addedToCart": "{name} ajouté au panier",
-    "error": "Une erreur est survenue"
+    "error": "Une erreur est survenue",
+    "specsTitle": "Caractéristiques",
+    "specCategory": "Catégorie",
+    "specSku": "Référence (SKU)",
+    "specBarcode": "Code-barres",
+    "specUnit": "Vendu par",
+    "specStock": "Stock",
+    "specSold": "Ventes",
+    "specShop": "Boutique",
+    "subtotalQty": "Sous-total ({count} article(s))",
+    "discountLabel": "Remise",
+    "total": "Total"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -231,7 +242,7 @@
   "salesbot": {
     "title": "SalesBot",
     "subtitle": "Simulateur WhatsApp",
-    "orderViaBot": "Commander sur WhatsApp",
+    "orderViaBot": "Commander via SalesBot",
     "online": "en ligne",
     "placeholder": "Écrivez un message...",
     "welcome": "Bonjour ! Je suis le SalesBot WhatsApp de SmartBiz. Tapez *catalogue* pour voir les produits, *panier* pour voir votre panier ou *commander* pour finaliser.",

@@ -41,12 +41,14 @@ interface ProductDetail {
   price: number;
   compareAtPrice: number | null;
   unit: string;
+  sku: string | null;
+  barcode: string | null;
   images: string[];
   stockQuantity: number;
   ratingAverage: number;
   ratingCount: number;
   soldCount: number;
-  category: { name: string; slug: string };
+  category: { name: string; slug: string } | null;
   shop: {
     id: string;
     name: string;
@@ -67,6 +69,22 @@ function whatsappLink(phone: string, message: string) {
 function reviewerName(user: Review["user"]) {
   const name = `${user.firstName ?? ""} ${user.lastName?.charAt(0) ?? ""}`.trim();
   return name || "—";
+}
+
+function SpecRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "truncate text-right text-sm font-medium text-card-foreground",
+          mono && "font-mono text-xs",
+        )}
+      >
+        {value}
+      </dd>
+    </div>
+  );
 }
 
 export default function ProductDetailPage() {
@@ -204,6 +222,34 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* Caractéristiques — fiche structurée comme sur un bon de commande */}
+          <section className="mt-6 rounded-xl border border-border bg-card p-5">
+            <h2 className="text-base font-semibold text-card-foreground">{t("specsTitle")}</h2>
+            <dl className="mt-3 divide-y divide-border/60">
+              {product.category && (
+                <SpecRow label={t("specCategory")} value={product.category.name} />
+              )}
+              {product.sku && <SpecRow label={t("specSku")} value={product.sku} mono />}
+              {product.barcode && <SpecRow label={t("specBarcode")} value={product.barcode} mono />}
+              <SpecRow label={t("specUnit")} value={product.unit} />
+              <SpecRow
+                label={t("specStock")}
+                value={t("inStockCount", {
+                  count: product.stockQuantity,
+                  unit: product.unit,
+                })}
+              />
+              <SpecRow
+                label={t("specSold")}
+                value={t("soldCount", { count: formatCompact(product.soldCount) })}
+              />
+              <SpecRow
+                label={t("specShop")}
+                value={`${product.shop.name} · ${product.shop.city}`}
+              />
+            </dl>
+          </section>
+
           {product.description && (
             <section className="mt-6 rounded-xl border border-border bg-card p-5">
               <h2 className="text-base font-semibold text-card-foreground">
@@ -259,7 +305,9 @@ export default function ProductDetailPage() {
         {/* Colonne droite : panneau d'achat collant */}
         <div className="lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">{product.category.name}</p>
+            {product.category && (
+              <p className="text-xs text-muted-foreground">{product.category.name}</p>
+            )}
             <h1 className="mt-1 text-xl font-bold leading-snug text-card-foreground">
               {product.name}
             </h1>
@@ -329,6 +377,39 @@ export default function ProductDetailPage() {
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Récapitulatif de commande — recalculé avec la quantité */}
+            {!outOfStock && (
+              <div className="mt-4 rounded-lg border border-border/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("orderSummary")}
+                </p>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">
+                      {t("subtotalQty", { count: quantity })}
+                    </dt>
+                    <dd className="font-medium text-card-foreground tabular">
+                      {formatPrice(product.price * quantity)}
+                    </dd>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">{t("discountLabel")}</dt>
+                      <dd className="font-medium text-success tabular">
+                        -{formatPrice(((product.compareAtPrice ?? 0) - product.price) * quantity)}
+                      </dd>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between border-t border-border/60 pt-1.5">
+                    <dt className="font-semibold text-card-foreground">{t("total")}</dt>
+                    <dd className="text-price text-base font-bold">
+                      {formatPrice(product.price * quantity)}
+                    </dd>
+                  </div>
+                </dl>
               </div>
             )}
 

@@ -305,6 +305,8 @@ export class ProductsService {
       },
       select: {
         ...CATALOG_SELECT,
+        sku: true,
+        barcode: true,
         lowStockThreshold: true,
         shop: {
           select: {

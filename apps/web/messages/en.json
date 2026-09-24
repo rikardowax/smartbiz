@@ -190,7 +190,18 @@
     "loginToCheckout": "Log in to complete your order",
     "orderSuccess": "Order placed successfully",
     "addedToCart": "{name} added to cart",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "specsTitle": "Specifications",
+    "specCategory": "Category",
+    "specSku": "SKU",
+    "specBarcode": "Barcode",
+    "specUnit": "Sold per",
+    "specStock": "Stock",
+    "specSold": "Sales",
+    "specShop": "Shop",
+    "subtotalQty": "Subtotal ({count} item(s))",
+    "discountLabel": "Discount",
+    "total": "Total"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -231,7 +242,7 @@
   "salesbot": {
     "title": "SalesBot",
     "subtitle": "WhatsApp Simulator",
-    "orderViaBot": "Order on WhatsApp",
+    "orderViaBot": "Order via SalesBot",
     "online": "online",
     "placeholder": "Type a message...",
     "welcome": "Hello! I'm the SmartBiz WhatsApp SalesBot. Type *catalog* to see products, *cart* for your cart, or *order* to checkout.",
