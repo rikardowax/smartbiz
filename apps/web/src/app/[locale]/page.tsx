@@ -4,8 +4,11 @@ import {
   ArrowRight,
   BarChart3,
   Bot,
+  CheckCircle2,
   ChevronRight,
   Loader2,
+  MessageCircle,
+  Package,
   Search,
   Shield,
   ShoppingBag,
@@ -20,6 +23,7 @@ import { type PublicShop, ShopCard } from "@/components/shop-card";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
 import { apiFetch } from "@/lib/api";
+import { formatPrice } from "@/lib/format";
 import { useAuthStore } from "@/stores/auth-store";
 
 interface Category {
@@ -61,6 +65,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [highlights, setHighlights] = useState<Highlights | null>(null);
   const [shops, setShops] = useState<PublicShop[]>([]);
+  const [totals, setTotals] = useState({ shops: 0, products: 0 });
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
@@ -78,14 +83,16 @@ export default function HomePage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [cats, hl, sh] = await Promise.all([
+        const [cats, hl, sh, prod] = await Promise.all([
           apiFetch<Category[]>("/catalog/categories"),
           apiFetch<Highlights>("/catalog/highlights"),
-          apiFetch<{ items: PublicShop[] }>("/shops/public?limit=6"),
+          apiFetch<{ items: PublicShop[]; meta: { total: number } }>("/shops/public?limit=6"),
+          apiFetch<{ meta: { total: number } }>("/catalog/products?limit=1"),
         ]);
         setCategories(cats);
         setHighlights(hl);
         setShops(sh.items ?? []);
+        setTotals({ shops: sh.meta.total, products: prod.meta.total });
       } catch {
         // silently degrade
       } finally {
@@ -105,50 +112,110 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-brand-gradient pt-16 pb-20 lg:pt-24 lg:pb-32">
-        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.3)_1px,transparent_0)] [background-size:28px_28px]" />
-        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="animate-fade-in-up text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
-            {t("title")}
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl animate-fade-in-up text-base text-white/80 sm:text-lg">
-            {t("subtitle")}
-          </p>
+      <section className="relative overflow-hidden bg-brand-gradient">
+        {/* Halos et trame de fond */}
+        <div className="absolute -left-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-emerald-950/40 blur-3xl" />
+        <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_0)] [background-size:26px_26px]" />
 
-          <form
-            onSubmit={handleSearch}
-            className="mx-auto mt-8 flex max-w-xl animate-fade-in-up items-center gap-2 rounded-xl bg-white/95 p-1.5 shadow-xl backdrop-blur-sm"
-          >
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className="w-full bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-            <Button type="submit" size="sm" className="shrink-0 px-5">
-              {tm("search")}
-            </Button>
-          </form>
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8 lg:px-8 lg:pb-24 lg:pt-20">
+          {/* Colonne texte */}
+          <div className="text-center lg:text-left">
+            <span className="animate-fade-in-up inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+              {t("badge")}
+            </span>
 
-          <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up">
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+            <h1 className="animate-fade-in-up mt-5 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-[3.4rem] lg:leading-[1.08]">
+              {t.rich("title", {
+                accent: (chunks) => (
+                  <span className="relative inline-block">
+                    <span className="relative z-10">{chunks}</span>
+                    <span className="absolute inset-x-0 bottom-1 -z-0 h-3 rounded-sm bg-white/25" />
+                  </span>
+                ),
+              })}
+            </h1>
+
+            <p className="animate-fade-in-up mx-auto mt-4 max-w-xl text-base text-white/80 sm:text-lg lg:mx-0">
+              {t("subtitle")}
+            </p>
+
+            <form
+              onSubmit={handleSearch}
+              className="animate-fade-in-up mx-auto mt-7 flex max-w-xl items-center gap-2 rounded-2xl bg-white/95 p-1.5 shadow-xl backdrop-blur-sm lg:mx-0"
             >
-              <Link href="/marketplace">
-                {t("ctaBuyer")}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-              <Link href={sellerHref}>{t("ctaSeller")}</Link>
-            </Button>
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t("searchPlaceholder")}
+                  className="w-full bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+              </div>
+              <Button type="submit" size="sm" className="shrink-0 px-5">
+                {tm("search")}
+              </Button>
+            </form>
+
+            <div className="animate-fade-in-up mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+              >
+                <Link href="/marketplace">
+                  {t("ctaBuyer")}
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
+                <Link href={sellerHref}>{t("ctaSeller")}</Link>
+              </Button>
+            </div>
+
+            {/* Statistiques réelles de la plateforme */}
+            <dl className="animate-fade-in-up mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 lg:justify-start">
+              <div className="flex items-center gap-2.5">
+                <Store className="h-4 w-4 text-white/60" />
+                <div className="text-left">
+                  <dd className="text-lg font-bold leading-none text-white tabular">
+                    {loading ? "…" : totals.shops}
+                  </dd>
+                  <dt className="mt-0.5 text-[11px] uppercase tracking-wide text-white/60">
+                    {t("statShopsLabel")}
+                  </dt>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Package className="h-4 w-4 text-white/60" />
+                <div className="text-left">
+                  <dd className="text-lg font-bold leading-none text-white tabular">
+                    {loading ? "…" : totals.products}
+                  </dd>
+                  <dt className="mt-0.5 text-[11px] uppercase tracking-wide text-white/60">
+                    {t("statProductsLabel")}
+                  </dt>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <MessageCircle className="h-4 w-4 text-white/60" />
+                <div className="text-left">
+                  <dd className="text-lg font-bold leading-none text-white">24/7</dd>
+                  <dt className="mt-0.5 text-[11px] uppercase tracking-wide text-white/60">
+                    {t("statWhatsapp")}
+                  </dt>
+                </div>
+              </div>
+            </dl>
+          </div>
+
+          {/* Mosaïque produit animée */}
+          <div className="relative mx-auto hidden h-[26rem] w-full max-w-md lg:block">
+            <HeroVisual highlights={highlights} loading={loading} />
           </div>
         </div>
       </section>
@@ -293,6 +360,82 @@ export default function HomePage() {
 }
 
 /* ─── Sous-composants ─── */
+
+/** Mosaïque animée du hero : vraies cartes produit + confirmation de commande. */
+function HeroVisual({ highlights, loading }: { highlights: Highlights | null; loading: boolean }) {
+  const t = useTranslations("hero");
+  const candidates = [
+    ...(highlights?.bestSellers ?? []),
+    ...(highlights?.featured ?? []),
+    ...(highlights?.newest ?? []),
+  ];
+  const [main, secondary] = candidates;
+
+  return (
+    <div className="relative h-full w-full">
+      <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-2xl" />
+
+      {/* Grande carte produit */}
+      <div className="animate-float absolute right-0 top-0 w-64 rotate-3 rounded-2xl bg-white p-3 shadow-2xl">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
+          {main?.images?.[0] ? (
+            // biome-ignore lint/performance/noImgElement: images produits hébergées par les vendeurs
+            <img src={main.images[0]} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-primary">
+              <Package className="h-10 w-10" />
+            </div>
+          )}
+          {main && (
+            <span className="absolute right-2 top-2 rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground shadow tabular">
+              {formatPrice(main.price)}
+            </span>
+          )}
+        </div>
+        <p className="mt-2 truncate px-1 text-sm font-semibold text-foreground">
+          {loading ? "…" : (main?.name ?? "SmartBiz")}
+        </p>
+        <p className="truncate px-1 pb-1 text-xs text-muted-foreground">
+          {main?.shop?.name ?? t("badge")}
+        </p>
+      </div>
+
+      {/* Confirmation de commande */}
+      <div className="animate-float-delayed absolute left-0 top-24 w-56 -rotate-6 rounded-2xl bg-white p-4 shadow-xl">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+          <p className="text-xs font-semibold text-foreground">{t("orderConfirmed")}</p>
+        </div>
+        <p className="mt-1.5 truncate text-xs text-muted-foreground">{main?.name ?? "SmartBiz"}</p>
+        {main && (
+          <p className="mt-0.5 text-xs font-bold text-foreground tabular">
+            {formatPrice(main.price)}
+          </p>
+        )}
+      </div>
+
+      {/* Pilule WhatsApp */}
+      <div className="animate-float absolute bottom-24 right-4 flex -rotate-2 items-center gap-2 rounded-full bg-white px-4 py-2.5 shadow-lg">
+        <MessageCircle className="h-4 w-4 text-[#25D366]" />
+        <span className="text-xs font-semibold text-foreground">{t("statWhatsapp")}</span>
+      </div>
+
+      {/* Seconde carte produit */}
+      {secondary && secondary.id !== main?.id && (
+        <div className="animate-float-delayed absolute bottom-0 left-10 w-44 rotate-2 overflow-hidden rounded-2xl bg-white shadow-xl">
+          {secondary.images?.[0] && (
+            // biome-ignore lint/performance/noImgElement: vignettes produits
+            <img src={secondary.images[0]} alt="" className="h-28 w-full object-cover" />
+          )}
+          <div className="p-3">
+            <p className="truncate text-xs font-semibold text-foreground">{secondary.name}</p>
+            <p className="text-xs font-bold text-primary tabular">{formatPrice(secondary.price)}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ProductRow({
   title,

@@ -19,8 +19,8 @@
     "admin": "Administration"
   },
   "hero": {
-    "title": "Find everything on SmartBiz",
-    "subtitle": "Discover products from different shops and order in a few clicks.",
+    "title": "All your city's shops, <accent>online.</accent>",
+    "subtitle": "Order from local shops in a few clicks — or directly on WhatsApp. Simple, fast, no account needed.",
     "searchPlaceholder": "What are you looking for?",
     "ctaBuyer": "Browse catalog",
     "ctaSeller": "Become a seller",
@@ -44,7 +44,12 @@
     "whyAnalyticsDesc": "Sales trends, stock alerts and finances at a glance for sellers.",
     "sellerCTATitle": "Are you a seller?",
     "sellerCTADesc": "Open your online shop, manage your stock and receive orders directly from the marketplace or WhatsApp.",
-    "sellerCTAButton": "Open my shop"
+    "sellerCTAButton": "Open my shop",
+    "badge": "Local marketplace",
+    "statWhatsapp": "WhatsApp ordering",
+    "orderConfirmed": "Order confirmed",
+    "statShopsLabel": "shops",
+    "statProductsLabel": "products"
   },
   "locale": {
     "label": "Language",

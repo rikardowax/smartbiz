@@ -19,8 +19,8 @@
     "admin": "Administration"
   },
   "hero": {
-    "title": "Trouvez tout sur SmartBiz",
-    "subtitle": "Découvrez des produits de différentes boutiques et commandez en quelques clics.",
+    "title": "Tout le commerce de votre ville, <accent>en ligne.</accent>",
+    "subtitle": "Commandez auprès des boutiques locales en quelques clics — ou directement sur WhatsApp. Simple, rapide, sans compte obligatoire.",
     "searchPlaceholder": "Que recherchez-vous ?",
     "ctaBuyer": "Découvrir le catalogue",
     "ctaSeller": "Devenir vendeur",
@@ -44,7 +44,12 @@
     "whyAnalyticsDesc": "Tendances de vente, alertes stock et finances en un coup d'œil pour les vendeurs.",
     "sellerCTATitle": "Vous êtes vendeur ?",
     "sellerCTADesc": "Ouvrez votre boutique en ligne, gérez vos stocks et recevez des commandes directement depuis la marketplace ou WhatsApp.",
-    "sellerCTAButton": "Ouvrir ma boutique"
+    "sellerCTAButton": "Ouvrir ma boutique",
+    "badge": "Marketplace locale",
+    "statWhatsapp": "Commande WhatsApp",
+    "orderConfirmed": "Commande confirmée",
+    "statShopsLabel": "boutiques",
+    "statProductsLabel": "produits"
   },
   "locale": {
     "label": "Langue",
