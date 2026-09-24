@@ -7,10 +7,11 @@ import {
 import { paginate } from "../../common/dto/pagination.dto.js";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.js";
 import { uniqueSlug } from "../../common/utils/slug.util.js";
-import { ProductStatus, Role, ShopStatus } from "../../generated/prisma/enums.js";
+import { OrderStatus, ProductStatus, Role, ShopStatus } from "../../generated/prisma/enums.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 import type {
   CreateShopDto,
+  CreateShopReviewDto,
   ShopSearchQueryDto,
   UpdateShopDto,
   UpdateShopStatusDto,
@@ -29,6 +30,8 @@ const PUBLIC_SHOP_SELECT = {
   country: true,
   address: true,
   currency: true,
+  ratingAverage: true,
+  ratingCount: true,
   createdAt: true,
 } as const;
 
@@ -209,5 +212,82 @@ export class ShopsService {
 
   async updateStatus(shopId: string, dto: UpdateShopStatusDto) {
     return this.prisma.shop.update({ where: { id: shopId }, data: { status: dto.status } });
+  }
+
+  // --- Avis boutique ---------------------------------------------------------
+
+  /** Avis publics d'une boutique (récents d'abord). */
+  async listShopReviews(shopSlug: string) {
+    const shop = await this.prisma.shop.findFirst({
+      where: { slug: shopSlug, status: ShopStatus.ACTIVE },
+      select: { id: true },
+    });
+    if (!shop) throw new NotFoundException("Boutique introuvable");
+
+    const [reviews, aggregate] = await this.prisma.$transaction([
+      this.prisma.shopReview.findMany({
+        where: { shopId: shop.id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          createdAt: true,
+          user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        },
+      }),
+      this.prisma.shopReview.aggregate({
+        where: { shopId: shop.id },
+        _avg: { rating: true },
+        _count: true,
+      }),
+    ]);
+
+    return {
+      reviews,
+      ratingAverage: Math.round((aggregate._avg.rating ?? 0) * 10) / 10,
+      ratingCount: aggregate._count,
+    };
+  }
+
+  /** Dépose ou met à jour un avis — réservé aux clients ayant reçu une commande. */
+  async createShopReview(shopId: string, userId: string, dto: CreateShopReviewDto) {
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { id: true },
+    });
+    if (!shop) throw new NotFoundException("Boutique introuvable");
+
+    // Même règle que pour les produits : avis réservé à un achat livré.
+    const purchased = await this.prisma.order.count({
+      where: { shopId, buyerId: userId, status: OrderStatus.DELIVERED },
+    });
+    if (purchased === 0) {
+      throw new ForbiddenException(
+        "Vous ne pouvez évaluer qu'une boutique auprès de laquelle vous avez reçu une commande",
+      );
+    }
+
+    await this.prisma.shopReview.upsert({
+      where: { shopId_userId: { shopId, userId } },
+      create: { shopId, userId, rating: dto.rating, comment: dto.comment },
+      update: { rating: dto.rating, comment: dto.comment },
+    });
+
+    const aggregate = await this.prisma.shopReview.aggregate({
+      where: { shopId },
+      _avg: { rating: true },
+      _count: true,
+    });
+
+    return this.prisma.shop.update({
+      where: { id: shopId },
+      data: {
+        ratingAverage: Math.round((aggregate._avg.rating ?? 0) * 10) / 10,
+        ratingCount: aggregate._count,
+      },
+      select: { id: true, ratingAverage: true, ratingCount: true },
+    });
   }
 }

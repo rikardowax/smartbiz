@@ -206,7 +206,8 @@
     "specShop": "Shop",
     "subtotalQty": "Subtotal ({count} item(s))",
     "discountLabel": "Discount",
-    "total": "Total"
+    "total": "Total",
+    "noShopReviewYet": "No reviews for this shop yet."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -564,5 +565,28 @@
     "pageOf": "Page {page} / {totalPages}",
     "cancel": "Cancel",
     "typeToConfirm": "Type \"{value}\" to confirm"
+  },
+  "favorites": {
+    "add": "Add to favorites",
+    "added": "Added to favorites",
+    "remove": "Remove from favorites",
+    "removed": "Removed from favorites",
+    "favorited": "In your favorites",
+    "loginRequired": "Log in to save favorites",
+    "loginButton": "Log in",
+    "error": "Could not update your favorites",
+    "browse": "Browse the catalog"
+  },
+  "reviews": {
+    "title": "Leave a review",
+    "yourRating": "Your rating",
+    "ratingRequired": "Please pick a rating before posting",
+    "commentPlaceholder": "Share your experience (optional)…",
+    "submit": "Post review",
+    "success": "Review posted, thank you!",
+    "error": "Could not post your review",
+    "loginRequired": "Log in to leave a review",
+    "loginButton": "Log in",
+    "verifiedNote": "Reviews are reserved for customers who received an order."
   }
 }

@@ -1,16 +1,19 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
   ArrayMaxSize,
   IsArray,
   IsEmail,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
+  Max,
   MaxLength,
+  Min,
 } from "class-validator";
 import { PaginationQueryDto } from "../../../common/dto/pagination.dto.js";
 import { ShopStatus } from "../../../generated/prisma/enums.js";
@@ -98,4 +101,19 @@ export class ShopSearchQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   city?: string;
+}
+
+export class CreateShopReviewDto {
+  @ApiProperty({ minimum: 1, maximum: 5 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  comment?: string;
 }

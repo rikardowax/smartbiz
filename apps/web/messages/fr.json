@@ -206,7 +206,8 @@
     "specShop": "Boutique",
     "subtotalQty": "Sous-total ({count} article(s))",
     "discountLabel": "Remise",
-    "total": "Total"
+    "total": "Total",
+    "noShopReviewYet": "Aucun avis pour cette boutique pour le moment."
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -564,5 +565,28 @@
     "pageOf": "Page {page} / {totalPages}",
     "cancel": "Annuler",
     "typeToConfirm": "Tapez « {value} » pour confirmer"
+  },
+  "favorites": {
+    "add": "Ajouter aux favoris",
+    "added": "Ajouté aux favoris",
+    "remove": "Retirer des favoris",
+    "removed": "Retiré des favoris",
+    "favorited": "Dans vos favoris",
+    "loginRequired": "Connectez-vous pour ajouter des favoris",
+    "loginButton": "Se connecter",
+    "error": "Impossible de modifier vos favoris",
+    "browse": "Découvrir le catalogue"
+  },
+  "reviews": {
+    "title": "Laisser un avis",
+    "yourRating": "Votre note",
+    "ratingRequired": "Choisissez une note avant de publier",
+    "commentPlaceholder": "Décrivez votre expérience (optionnel)…",
+    "submit": "Publier l'avis",
+    "success": "Avis publié, merci !",
+    "error": "Impossible de publier votre avis",
+    "loginRequired": "Connectez-vous pour laisser un avis",
+    "loginButton": "Se connecter",
+    "verifiedNote": "Avis réservé aux clients ayant reçu une commande."
   }
 }

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useCartAnimation } from "@/components/add-to-cart-animation";
+import { FavoriteButton } from "@/components/favorite-button";
 import { RatingStars } from "@/components/rating-stars";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -24,7 +25,7 @@ export interface CatalogProduct {
   soldCount: number;
   ratingAverage: number;
   ratingCount: number;
-  category: { name: string; slug: string };
+  category: { name: string; slug: string } | null;
   shop: { name: string; slug: string; city: string };
 }
 
@@ -116,6 +117,8 @@ export function ProductCard({
             </span>
           </div>
         )}
+
+        <FavoriteButton productId={product.id} className="absolute right-2 top-2 z-20" />
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">

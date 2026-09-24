@@ -18,6 +18,7 @@ import type { AuthenticatedUser } from "../../common/types/authenticated-user.js
 import { Role } from "../../generated/prisma/enums.js";
 import {
   CreateShopDto,
+  CreateShopReviewDto,
   ShopSearchQueryDto,
   UpdateShopDto,
   UpdateShopStatusDto,
@@ -64,6 +65,13 @@ export class ShopsController {
     return this.shopsService.findPublicBySlug(slug);
   }
 
+  @Public()
+  @Get("public/:slug/reviews")
+  @ApiOperation({ summary: "Avis publics d'une boutique" })
+  listShopReviews(@Param("slug") slug: string) {
+    return this.shopsService.listShopReviews(slug);
+  }
+
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @Get("admin")
@@ -102,5 +110,16 @@ export class ShopsController {
   @ApiOperation({ summary: "Supprimer sa boutique" })
   remove(@Param("shopId") shopId: string, @CurrentUser() user: AuthenticatedUser) {
     return this.shopsService.remove(shopId, user);
+  }
+
+  @ApiBearerAuth()
+  @Post(":shopId/reviews")
+  @ApiOperation({ summary: "Laisser un avis sur une boutique (commande livrée requise)" })
+  createShopReview(
+    @Param("shopId") shopId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateShopReviewDto,
+  ) {
+    return this.shopsService.createShopReview(shopId, user.id, dto);
   }
 }

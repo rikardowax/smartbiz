@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
+import { RatingStars } from "@/components/rating-stars";
+import { ReviewForm } from "@/components/review-form";
 import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -23,7 +25,23 @@ interface PublicShop {
   whatsappNumber: string | null;
   address: string | null;
   logoUrl?: string | null;
+  ratingAverage: number;
+  ratingCount: number;
   _count?: { products: number };
+}
+
+interface ShopReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  user: { firstName: string | null; lastName: string | null; avatarUrl: string | null };
+}
+
+interface ShopReviewsResponse {
+  reviews: ShopReview[];
+  ratingAverage: number;
+  ratingCount: number;
 }
 
 function whatsappLink(phone: string, message: string) {
@@ -38,6 +56,8 @@ export default function ShopPage() {
   const addItem = useCartStore((s) => s.addItem);
   const [shop, setShop] = useState<PublicShop | null>(null);
   const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [reviews, setReviews] = useState<ShopReviewsResponse | null>(null);
+  const [reviewsKey, setReviewsKey] = useState(0);
   const [sort, setSort] = useState<(typeof SORTS)[number]>("popular");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,6 +87,21 @@ export default function ShopPage() {
       cancelled = true;
     };
   }, [slug, sort, t]);
+
+  // Avis boutique — rechargés après chaque publication.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reviewsKey force le rechargement après publication d'un avis
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    apiFetch<ShopReviewsResponse>(`/shops/public/${slug}/reviews`)
+      .then((res) => {
+        if (!cancelled) setReviews(res);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, reviewsKey]);
 
   if (loading && !shop) {
     return (
@@ -119,6 +154,15 @@ export default function ShopPage() {
                 {shop.city}, {shop.country}
               </span>
               {shop._count && <span>{t("shopProductCount", { count: shop._count.products })}</span>}
+              {shop.ratingCount > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <RatingStars rating={shop.ratingAverage} />
+                  <span className="font-semibold text-foreground">
+                    {shop.ratingAverage.toFixed(1)}
+                  </span>
+                  <span>({t("reviewCount", { count: shop.ratingCount })})</span>
+                </span>
+              )}
             </div>
             {shop.description && (
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{shop.description}</p>
@@ -195,6 +239,53 @@ export default function ShopPage() {
           </div>
         )}
       </div>
+
+      {/* Avis clients */}
+      <section className="mt-8 rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-foreground">{t("reviewsTitle")}</h2>
+          {reviews && reviews.ratingCount > 0 && (
+            <div className="flex items-center gap-2">
+              <RatingStars rating={reviews.ratingAverage} size="md" />
+              <span className="text-sm font-semibold text-foreground">
+                {reviews.ratingAverage.toFixed(1)}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({t("reviewCount", { count: reviews.ratingCount })})
+              </span>
+            </div>
+          )}
+        </div>
+
+        {!reviews || reviews.reviews.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">{t("noShopReviewYet")}</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {reviews.reviews.map((review) => (
+              <li key={review.id} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-center gap-2">
+                  <RatingStars rating={review.rating} />
+                  <span className="text-sm font-medium text-card-foreground">
+                    {`${review.user.firstName ?? ""} ${review.user.lastName?.charAt(0) ?? ""}`.trim() ||
+                      "—"}
+                  </span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                  </span>
+                </div>
+                {review.comment && (
+                  <p className="mt-1.5 text-sm text-muted-foreground">{review.comment}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <ReviewForm
+          endpoint={`/shops/${shop.id}/reviews`}
+          onSuccess={() => setReviewsKey((k) => k + 1)}
+        />
+      </section>
     </div>
   );
 }

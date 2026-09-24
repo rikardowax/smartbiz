@@ -114,6 +114,8 @@ model User {
   addresses             Address[]
   orders                Order[]                 @relation("OrdersAsBuyer")
   reviews               Review[]
+  shopReviews           ShopReview[]
+  favorites             Favorite[]
   stockMovements        StockMovement[]
   refreshTokens         RefreshToken[]
   passwordResets        PasswordResetToken[]
@@ -196,10 +198,13 @@ model Shop {
   interests      String[]   @default([])
   currency       String     @default("XAF")
   status         ShopStatus @default(PENDING)
+  ratingAverage  Float      @default(0)
+  ratingCount    Int        @default(0)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
   owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shopReviews       ShopReview[]
   products          Product[]
   orders            Order[]
   customers         Customer[]
@@ -259,6 +264,7 @@ model Product {
   orderItems     OrderItem[]
   stockMovements StockMovement[]
   reviews        Review[]
+  favorites      Favorite[]
 
   @@unique([shopId, slug])
   @@unique([shopId, sku])
@@ -281,6 +287,37 @@ model Review {
   @@unique([productId, userId])
   @@index([productId])
   @@map("reviews")
+}
+
+model ShopReview {
+  id        String   @id @default(cuid())
+  shopId    String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, userId])
+  @@index([shopId])
+  @@map("shop_reviews")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("favorites")
 }
 
 // ---------------------------------------------------------------------------

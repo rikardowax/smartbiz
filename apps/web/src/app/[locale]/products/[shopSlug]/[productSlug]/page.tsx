@@ -15,8 +15,10 @@ import {
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { FavoriteButton } from "@/components/favorite-button";
 import { type CatalogProduct, ProductCard } from "@/components/product-card";
 import { RatingStars } from "@/components/rating-stars";
+import { ReviewForm } from "@/components/review-form";
 import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -95,8 +97,10 @@ export default function ProductDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const addItem = useCartStore((s) => s.addItem);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reloadKey force le rechargement après publication d'un avis
   useEffect(() => {
     if (!shopSlug || !productSlug) return;
     let cancelled = false;
@@ -116,7 +120,7 @@ export default function ProductDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [shopSlug, productSlug, t]);
+  }, [shopSlug, productSlug, t, reloadKey]);
 
   const whatsappMessage = useMemo(() => {
     if (!product) return "";
@@ -299,6 +303,11 @@ export default function ProductDetailPage() {
                 ))}
               </ul>
             )}
+
+            <ReviewForm
+              endpoint={`/catalog/products/${product.id}/reviews`}
+              onSuccess={() => setReloadKey((k) => k + 1)}
+            />
           </section>
         </div>
 
@@ -414,10 +423,13 @@ export default function ProductDetailPage() {
             )}
 
             <div className="mt-4 space-y-2">
-              <Button className="w-full gap-2" onClick={handleAddToCart} disabled={outOfStock}>
-                <ShoppingCart className="h-4 w-4" />
-                {t("addToCart")}
-              </Button>
+              <div className="flex gap-2">
+                <Button className="flex-1 gap-2" onClick={handleAddToCart} disabled={outOfStock}>
+                  <ShoppingCart className="h-4 w-4" />
+                  {t("addToCart")}
+                </Button>
+                <FavoriteButton productId={product.id} variant="inline" />
+              </div>
 
               <SalesbotLink shopSlug={product.shop.slug} className="w-full" />
 

@@ -2,6 +2,7 @@
 
 import { MapPin, MessageCircle, Store } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { RatingStars } from "@/components/rating-stars";
 import { SalesbotLink } from "@/components/salesbot-link";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -15,6 +16,8 @@ export interface PublicShop {
   phone: string;
   whatsappNumber: string | null;
   logoUrl?: string | null;
+  ratingAverage?: number;
+  ratingCount?: number;
   _count?: { products: number };
 }
 
@@ -49,11 +52,15 @@ export function ShopCard({ shop }: { shop: PublicShop }) {
         {shop.description || "—"}
       </p>
 
-      {shop._count && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t("shopProductCount", { count: shop._count.products })}
-        </p>
-      )}
+      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+        {shop._count && <span>{t("shopProductCount", { count: shop._count.products })}</span>}
+        {!!shop.ratingCount && shop.ratingCount > 0 && (
+          <span className="flex items-center gap-1">
+            <RatingStars rating={shop.ratingAverage ?? 0} />
+            <span className="font-semibold text-foreground">{shop.ratingAverage?.toFixed(1)}</span>
+          </span>
+        )}
+      </div>
 
       <div className="mt-4 flex gap-2">
         <Button asChild size="sm" className="flex-1">

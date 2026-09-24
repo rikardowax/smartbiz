@@ -45,6 +45,7 @@ export function Header({ locale }: { locale: string }) {
 
   // Le menu plein écran se referme dès que la route change ou que la
   // session bascule : connexion, inscription et déconnexion ferment le menu.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname et isAuthenticated sont les déclencheurs de fermeture
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname, isAuthenticated]);
