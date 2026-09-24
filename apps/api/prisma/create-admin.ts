@@ -1,8 +1,6 @@
-import "dotenv/config";
-import { PrismaPg } from "@prisma/adapter-pg";
 import * as bcrypt from "bcryptjs";
-import { PrismaClient } from "../src/generated/prisma/client.js";
 import { Role } from "../src/generated/prisma/enums.js";
+import { prisma } from "./db.js";
 
 /**
  * Provisionne un compte administrateur, idempotent :
@@ -15,9 +13,6 @@ import { Role } from "../src/generated/prisma/enums.js";
  *
  * Sur Render : Shell du service smartbiz-api, puis la même commande.
  */
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }),
-});
 
 const phone = (process.env.ADMIN_PHONE ?? "+237699000000").replace(/[\s().-]/g, "");
 const email = process.env.ADMIN_EMAIL?.toLowerCase() || "admin@smartbiz.cm";
