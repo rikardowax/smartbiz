@@ -1,5 +1,14 @@
-const CACHE_NAME = "smartbiz-v3";
-const PRECACHE = ["/", "/fr", "/en", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "smartbiz-v4";
+const PRECACHE = [
+  "/",
+  "/fr",
+  "/en",
+  "/manifest.webmanifest",
+  "/icon.svg",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/icon-180.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

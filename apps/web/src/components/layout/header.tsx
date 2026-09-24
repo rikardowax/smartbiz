@@ -1,9 +1,10 @@
 "use client";
 
-import { LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-react";
+import { ChevronRight, LogOut, Menu, Moon, ShoppingCart, Store, Sun, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useCartAnimation } from "@/components/add-to-cart-animation";
 import { PwaInstallButton } from "@/components/pwa-install-button";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,26 @@ export function Header({ locale }: { locale: string }) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Le menu plein écran se referme dès que la route change ou que la
+  // session bascule : connexion, inscription et déconnexion ferment le menu.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname, isAuthenticated]);
+
+  // Scroll verrouillé + fermeture par Échap tant que le menu est ouvert.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
 
   const isAdmin = user?.role === "ADMIN";
   const isSeller = user?.role === "VENDEUR" || isAdmin;
@@ -240,43 +261,138 @@ export function Header({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {mobileOpen && (
-        <div className="border-t border-border/60 px-4 py-4 md:hidden">
-          <nav className="flex flex-col gap-2">
-            {links.map((link) => (
-              <MobileNavLink key={link.href} href={link.href} onClick={() => setMobileOpen(false)}>
-                {link.label}
-              </MobileNavLink>
-            ))}
-
-            {mounted && isAuthenticated ? (
-              <>
-                <div className="mt-2 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground">
-                  {user?.firstName} {user?.lastName}
+      {/* Portal : le header a backdrop-blur, ce qui crée un containing block
+          et empêcherait un descendant `fixed` de couvrir tout le viewport. */}
+      {mounted &&
+        mobileOpen &&
+        createPortal(
+          <div className="animate-in fade-in slide-in-from-top-4 fixed inset-0 z-[70] flex flex-col bg-background duration-300 md:hidden">
+            {/* Barre supérieure du menu */}
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-border/60 px-4">
+              <Link
+                href="/"
+                className="flex items-center gap-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-gradient text-white shadow">
+                  <Store className="h-5 w-5" />
                 </div>
-                {!isSeller && (
-                  <Button asChild variant="outline">
-                    <Link href="/become-seller">{t("becomeSeller")}</Link>
+                <span className="text-xl font-extrabold text-brand-gradient">SmartBiz</span>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Fermer le menu"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+
+            {/* Liens principaux, grandes zones tactiles */}
+            <nav className="animate-slide-in-stagger flex flex-1 flex-col gap-1 overflow-y-auto px-6 py-6">
+              {links.map((link) => {
+                const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center justify-between rounded-2xl px-4 py-4 text-xl font-bold transition-colors",
+                      active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-accent",
+                    )}
+                  >
+                    {link.label}
+                    <ChevronRight
+                      className={cn(
+                        "h-5 w-5 transition-transform",
+                        active ? "text-primary" : "text-muted-foreground/40",
+                      )}
+                    />
+                  </Link>
+                );
+              })}
+
+              <div className="my-4 border-t border-border/60" />
+
+              {mounted && isAuthenticated ? (
+                <>
+                  {/* Carte utilisateur */}
+                  <Link
+                    href="/account/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 rounded-2xl bg-secondary/60 px-4 py-3"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                      {initials || <User className="h-5 w-5" />}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-base font-semibold text-foreground">
+                        {user?.firstName} {user?.lastName}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {user?.phone}
+                      </span>
+                    </span>
+                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/50" />
+                  </Link>
+
+                  {!isSeller && (
+                    <Button asChild variant="outline" size="lg" className="mt-3 w-full rounded-2xl">
+                      <Link href="/become-seller">{t("becomeSeller")}</Link>
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="lg"
+                    onClick={handleLogout}
+                    className="mt-3 w-full rounded-2xl"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("logout")}
                   </Button>
-                )}
-                <Button onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("logout")}
-                </Button>
-              </>
-            ) : (
-              <div className="mt-2 flex flex-col gap-2">
-                <Button asChild variant="outline">
-                  <Link href="/login">{t("login")}</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/register">{t("register")}</Link>
-                </Button>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
+                </>
+              ) : (
+                <div className="mt-1 flex flex-col gap-3">
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-2xl">
+                    <Link href="/login">{t("login")}</Link>
+                  </Button>
+                  <Button asChild size="lg" className="w-full rounded-2xl">
+                    <Link href="/register">{t("register")}</Link>
+                  </Button>
+                </div>
+              )}
+            </nav>
+
+            {/* Barre d'actions rapides en bas */}
+            <div className="flex shrink-0 items-center justify-center gap-6 border-t border-border/60 px-4 py-4">
+              <button
+                type="button"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="flex flex-col items-center gap-1 text-muted-foreground"
+                aria-label="Toggle theme"
+              >
+                <Sun className="h-5 w-5 dark:hidden" />
+                <Moon className="hidden h-5 w-5 dark:block" />
+                <span className="text-[10px] font-medium uppercase tracking-wide">
+                  {theme === "dark" ? "Light" : "Dark"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.replace(pathname, { locale: otherLocale })}
+                className="flex flex-col items-center gap-1 text-muted-foreground"
+              >
+                <span className="flex h-5 items-center text-sm font-bold uppercase">
+                  {otherLocale}
+                </span>
+                <span className="text-[10px] font-medium uppercase tracking-wide">Langue</span>
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </header>
   );
 }
@@ -297,26 +413,6 @@ function NavLink({
         "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
         active ? "bg-accent text-accent-foreground" : "text-muted-foreground",
       )}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function MobileNavLink({
-  href,
-  onClick,
-  children,
-}: {
-  href: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-accent"
     >
       {children}
     </Link>

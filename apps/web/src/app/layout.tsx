@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "SmartBiz",
   },
+  icons: {
+    apple: "/icons/icon-180.png",
+  },
 };
 
 export const viewport: Viewport = {
