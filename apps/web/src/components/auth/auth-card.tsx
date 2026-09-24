@@ -216,7 +216,11 @@ function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="animate-slide-in-stagger space-y-4">
+    <form
+      method="post"
+      onSubmit={handleSubmit(onSubmit)}
+      className="animate-slide-in-stagger space-y-4"
+    >
       <div>
         <Label htmlFor="identifier" required>
           {t("identifier")}
@@ -272,7 +276,6 @@ function RegisterForm() {
   const t = useTranslations("auth");
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const setUser = useAuthStore((s) => s.setUser);
 
   const phoneRegex = /^\+?[0-9]{8,15}$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
@@ -314,9 +317,7 @@ function RegisterForm() {
           role: "ACHETEUR" as const,
         }),
       });
-      setAuth(res);
-      const me = await apiFetch<User>("/auth/me");
-      setUser(me);
+      setAuth({ ...res, user: { ...res.user, shops: [] } });
       toast.success(t("registerSuccess"));
       router.push("/marketplace");
     } catch (err: unknown) {
@@ -325,7 +326,11 @@ function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="animate-slide-in-stagger space-y-4">
+    <form
+      method="post"
+      onSubmit={handleSubmit(onSubmit)}
+      className="animate-slide-in-stagger space-y-4"
+    >
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName" required>

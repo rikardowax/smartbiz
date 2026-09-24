@@ -8,8 +8,9 @@ import { usePathname } from "@/i18n/navigation";
  */
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const transitionKey = pathname === "/login" || pathname === "/register" ? "/auth" : pathname;
   return (
-    <div key={pathname} className="animate-page-enter">
+    <div key={transitionKey} className="animate-page-enter">
       {children}
     </div>
   );
