@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Heart, LogOut, Settings, ShoppingBag, Store, User } from "lucide-react";
+import { Bell, Heart, LogOut, Settings, ShieldCheck, ShoppingBag, Store, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -17,6 +17,7 @@ const menuItems = [
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("account");
+  const tNav = useTranslations("nav");
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
 
@@ -77,7 +78,15 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
               );
             })}
 
-            {user?.role === "VENDEUR" || user?.role === "ADMIN" ? (
+            {user?.role === "ADMIN" ? (
+              <Link
+                href="/admin"
+                className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-violet-600 transition-colors hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-950"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span className="whitespace-nowrap">{tNav("admin")}</span>
+              </Link>
+            ) : user?.role === "VENDEUR" ? (
               <Link
                 href="/dashboard"
                 className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"

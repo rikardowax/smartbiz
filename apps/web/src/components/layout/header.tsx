@@ -42,7 +42,8 @@ export function Header({ locale }: { locale: string }) {
     setMounted(true);
   }, []);
 
-  const isSeller = user?.role === "VENDEUR" || user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN";
+  const isSeller = user?.role === "VENDEUR" || isAdmin;
   const showCart = !isSeller;
 
   const buyerLinks = [
@@ -56,7 +57,11 @@ export function Header({ locale }: { locale: string }) {
     ...(isSeller ? [{ href: "/salesbot", label: t("salesbot") }] : []),
   ];
 
-  const links = isAuthenticated && isSeller ? [...buyerLinks, ...sellerLinks] : buyerLinks;
+  const links = isAdmin
+    ? [...buyerLinks, { href: "/admin", label: t("admin") }]
+    : isAuthenticated && isSeller
+      ? [...buyerLinks, ...sellerLinks]
+      : buyerLinks;
 
   const handleLogout = async () => {
     const { refreshToken } = useAuthStore.getState();

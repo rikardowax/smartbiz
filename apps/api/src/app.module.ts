@@ -6,6 +6,7 @@ import { AppController } from "./app.controller.js";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard.js";
 import { RolesGuard } from "./common/guards/roles.guard.js";
 import { configuration, validateEnv } from "./config/configuration.js";
+import { AdminModule } from "./modules/admin/admin.module.js";
 import { AssistantModule } from "./modules/assistant/assistant.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { CategoriesModule } from "./modules/categories/categories.module.js";
@@ -40,6 +41,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     DashboardModule,
     AssistantModule,
     SalesbotModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
