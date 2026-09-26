@@ -445,7 +445,9 @@
     "shopAddress": "Adresse",
     "shopDescription": "Description",
     "shopUpdated": "Boutique mise à jour",
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "contactClient": "Contacter",
+    "whatsappClientMessage": "Bonjour {name}, je suis le vendeur. Concernant votre commande {order} : "
   },
   "account": {
     "profile": "Infos perso",

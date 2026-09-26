@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { CreateManualOrderForm } from "@/components/seller/create-manual-order";
@@ -11,6 +11,7 @@ interface Order {
   id: string;
   orderNumber: string;
   contactName: string;
+  contactPhone: string;
   total: number;
   status: string;
   paymentStatus: string;
@@ -29,6 +30,23 @@ export default function OrdersPage() {
     { label: t("status"), accessor: (o) => o.status },
     { label: t("paymentStatus"), accessor: (o) => o.paymentStatus },
     { label: t("date"), accessor: (o) => new Date(o.placedAt).toLocaleDateString() },
+    {
+      label: t("contactClient"),
+      render: (o) =>
+        o.contactPhone ? (
+          <a
+            href={`https://wa.me/${o.contactPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
+              t("whatsappClientMessage", { name: o.contactName, order: o.orderNumber }),
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-md bg-[#25D366] px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#128C7E]"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            WhatsApp
+          </a>
+        ) : null,
+    },
   ];
 
   const handleCreated = () => {
