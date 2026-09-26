@@ -2,6 +2,9 @@
 
 Marketplace et ERP intelligent pour les commerçants africains.
 
+> **Nouveau sur le projet ?** Lisez [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —
+> vue d'ensemble, modèle de données, parcours utilisateurs, carte des API et configuration.
+
 ## Stack
 
 - **Backend** : NestJS 12, Prisma 7, PostgreSQL 16, JWT, RBAC
