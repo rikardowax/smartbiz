@@ -1,8 +1,10 @@
 "use client";
 
-import { Eye, Loader2, Package, ShoppingCart, Store, Users } from "lucide-react";
+import { Eye, Loader2, Package, Pencil, ShoppingCart, Store, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { CreateShopForm } from "@/components/seller/create-shop";
+import { EditShopForm } from "@/components/seller/edit-shop";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSellerShop } from "@/hooks/use-seller-shop";
@@ -11,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 export default function MyShopsPage() {
   const t = useTranslations("erp");
   const { user, isSeller, isLoading, hasShop } = useSellerShop();
+  const [editingShopId, setEditingShopId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -47,12 +50,29 @@ export default function MyShopsPage() {
               <p className="text-xs text-muted-foreground uppercase">{shop.status}</p>
             </CardHeader>
             <CardContent className="space-y-3 p-4">
-              <Button asChild size="sm" className="w-full">
-                <Link href={`/shops/${shop.slug}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("viewPublicShop")}
-                </Link>
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button asChild size="sm">
+                  <Link href={`/shops/${shop.slug}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {t("viewPublicShop")}
+                  </Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditingShopId(editingShopId === shop.id ? null : shop.id)}
+                >
+                  <Pencil className="mr-1.5 h-4 w-4" />
+                  {t("edit")}
+                </Button>
+              </div>
+              {editingShopId === shop.id && (
+                <EditShopForm
+                  shopId={shop.id}
+                  onCancel={() => setEditingShopId(null)}
+                  onSuccess={() => setEditingShopId(null)}
+                />
+              )}
               <div className="grid grid-cols-2 gap-2">
                 <Button asChild size="sm" variant="outline">
                   <Link href="/dashboard/products">

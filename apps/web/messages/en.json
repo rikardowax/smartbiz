@@ -228,7 +228,9 @@
     "trackOrder": "Track order",
     "payViaWhatsApp": "Pay via WhatsApp",
     "whatsappPayment": "Hello {shop}, I just placed order {order} ({total}). I would like to pay by {method}.",
-    "paymentPendingNote": "Your order will be prepared once the seller confirms your payment."
+    "paymentPendingNote": "Your order will be prepared once the seller confirms your payment.",
+    "contactSeller": "Contact the seller",
+    "whatsappContact": "Hello {shop}, about my order {order}."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -437,7 +439,13 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "byCategory": "By category",
-    "email": "Email"
+    "email": "Email",
+    "shopPhone": "Phone",
+    "shopCity": "City",
+    "shopAddress": "Address",
+    "shopDescription": "Description",
+    "shopUpdated": "Shop updated",
+    "edit": "Edit"
   },
   "account": {
     "profile": "User info",
@@ -667,6 +675,8 @@
       "MOBILE_MONEY": "Mobile Money",
       "BANK_TRANSFER": "bank transfer",
       "CARD": "bank card"
-    }
+    },
+    "contactSeller": "Contact the seller",
+    "whatsappContact": "Hello {shop}, about my order {order}."
   }
 }

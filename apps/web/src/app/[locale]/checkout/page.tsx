@@ -21,7 +21,7 @@ interface PlacedOrder {
   total: number;
   paymentMethod: string;
   paymentStatus: string;
-  shop: { name: string; slug: string; whatsappNumber: string | null };
+  shop: { name: string; slug: string; phone: string; whatsappNumber: string | null };
 }
 
 export default function CheckoutPage() {
@@ -62,14 +62,17 @@ export default function CheckoutPage() {
 
         <div className="mt-6 space-y-3">
           {placedOrders.map((order) => {
-            const whatsapp = order.shop.whatsappNumber;
+            // WhatsApp du vendeur : dédié, sinon son téléphone (wa.me accepte les deux).
+            const whatsapp = order.shop.whatsappNumber || order.shop.phone;
             const needsPayment = order.paymentMethod !== "CASH_ON_DELIVERY";
-            const waMessage = t("whatsappPayment", {
-              shop: order.shop.name,
-              order: order.orderNumber,
-              total: formatPrice(order.total),
-              method: t(`orderPaymentMethod${order.paymentMethod}`),
-            });
+            const waMessage = needsPayment
+              ? t("whatsappPayment", {
+                  shop: order.shop.name,
+                  order: order.orderNumber,
+                  total: formatPrice(order.total),
+                  method: t(`orderPaymentMethod${order.paymentMethod}`),
+                })
+              : t("whatsappContact", { shop: order.shop.name, order: order.orderNumber });
             return (
               <div key={order.id} className="rounded-xl border border-border bg-card p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -91,11 +94,16 @@ export default function CheckoutPage() {
                       {t("trackOrder")}
                     </Link>
                   </Button>
-                  {needsPayment && whatsapp && (
+                  {whatsapp && (
                     <Button
                       asChild
                       size="sm"
-                      className="flex-1 gap-1.5 bg-[#25D366] text-white hover:bg-[#128C7E]"
+                      className={
+                        needsPayment
+                          ? "flex-1 gap-1.5 bg-[#25D366] text-white hover:bg-[#128C7E]"
+                          : "flex-1 gap-1.5"
+                      }
+                      variant={needsPayment ? "default" : "outline"}
                     >
                       <a
                         href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(waMessage)}`}
@@ -103,7 +111,7 @@ export default function CheckoutPage() {
                         rel="noopener noreferrer"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
-                        {t("payViaWhatsApp")}
+                        {needsPayment ? t("payViaWhatsApp") : t("contactSeller")}
                       </a>
                     </Button>
                   )}

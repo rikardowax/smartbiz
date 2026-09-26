@@ -199,35 +199,49 @@ export default function TrackPage() {
               </div>
             </div>
 
-            {/* Règlement via WhatsApp du vendeur tant que le paiement est en attente */}
-            {order.paymentStatus !== "PAID" &&
-              order.paymentMethod !== "CASH_ON_DELIVERY" &&
-              order.shop.whatsappNumber && (
-                <div className="mt-4 rounded-lg border border-[#25D366]/30 bg-[#25D366]/5 p-3">
-                  <p className="text-xs text-muted-foreground">{t("payHint")}</p>
+            {/* Contact/paiement via WhatsApp : dédié ou téléphone de la boutique */}
+            {(() => {
+              const whatsapp = order.shop.whatsappNumber || order.shop.phone;
+              if (!whatsapp) return null;
+              const pending = order.paymentStatus !== "PAID";
+              const payable = pending && order.paymentMethod !== "CASH_ON_DELIVERY";
+              const message = payable
+                ? t("whatsappPayment", {
+                    shop: order.shop.name,
+                    order: order.orderNumber,
+                    total: formatPrice(order.total),
+                    method: t(`method.${order.paymentMethod}`),
+                  })
+                : t("whatsappContact", { shop: order.shop.name, order: order.orderNumber });
+              return (
+                <div
+                  className={cn(
+                    "mt-4 rounded-lg border p-3",
+                    payable ? "border-[#25D366]/30 bg-[#25D366]/5" : "border-border/60",
+                  )}
+                >
+                  {payable && <p className="text-xs text-muted-foreground">{t("payHint")}</p>}
                   <Button
                     asChild
                     size="sm"
-                    className="mt-2 w-full gap-1.5 bg-[#25D366] text-white hover:bg-[#128C7E]"
+                    variant={payable ? "default" : "outline"}
+                    className={cn(
+                      "mt-2 w-full gap-1.5",
+                      payable && "bg-[#25D366] text-white hover:bg-[#128C7E]",
+                    )}
                   >
                     <a
-                      href={`https://wa.me/${order.shop.whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
-                        t("whatsappPayment", {
-                          shop: order.shop.name,
-                          order: order.orderNumber,
-                          total: formatPrice(order.total),
-                          method: t(`method.${order.paymentMethod}`),
-                        }),
-                      )}`}
+                      href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />
-                      {t("payViaWhatsApp")}
+                      {payable ? t("payViaWhatsApp") : t("contactSeller")}
                     </a>
                   </Button>
                 </div>
-              )}
+              );
+            })()}
           </div>
 
           {/* Progression */}

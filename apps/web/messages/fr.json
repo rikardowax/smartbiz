@@ -228,7 +228,9 @@
     "trackOrder": "Suivre la commande",
     "payViaWhatsApp": "Régler sur WhatsApp",
     "whatsappPayment": "Bonjour {shop}, je viens de passer la commande {order} ({total}). Je souhaite régler par {method}.",
-    "paymentPendingNote": "Votre commande sera préparée dès que le vendeur confirmera la réception du paiement."
+    "paymentPendingNote": "Votre commande sera préparée dès que le vendeur confirmera la réception du paiement.",
+    "contactSeller": "Contacter le vendeur",
+    "whatsappContact": "Bonjour {shop}, à propos de ma commande {order}."
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -437,7 +439,13 @@
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
     "byCategory": "Par catégorie",
-    "email": "Email"
+    "email": "Email",
+    "shopPhone": "Téléphone",
+    "shopCity": "Ville",
+    "shopAddress": "Adresse",
+    "shopDescription": "Description",
+    "shopUpdated": "Boutique mise à jour",
+    "edit": "Modifier"
   },
   "account": {
     "profile": "Infos perso",
@@ -667,6 +675,8 @@
       "MOBILE_MONEY": "Mobile Money",
       "BANK_TRANSFER": "virement bancaire",
       "CARD": "carte bancaire"
-    }
+    },
+    "contactSeller": "Contacter le vendeur",
+    "whatsappContact": "Bonjour {shop}, à propos de ma commande {order}."
   }
 }
