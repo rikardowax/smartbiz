@@ -57,3 +57,47 @@ export const useCartStore = create<CartStore>()(
     { name: "smartbiz-cart" },
   ),
 );
+
+const userCartKey = (userId: string) => `smartbiz-cart-user:${userId}`;
+
+function readUserCart(userId: string): CartItem[] {
+  try {
+    const raw = localStorage.getItem(userCartKey(userId));
+    return raw ? (JSON.parse(raw).state?.items ?? []) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeUserCart(userId: string, items: CartItem[]) {
+  localStorage.setItem(userCartKey(userId), JSON.stringify({ state: { items }, version: 0 }));
+}
+
+function mergeItems(a: CartItem[], b: CartItem[]): CartItem[] {
+  const merged = [...a];
+  for (const item of b) {
+    const existing = merged.find((i) => i.productId === item.productId);
+    if (existing) {
+      existing.quantity += item.quantity;
+    } else {
+      merged.push({ ...item });
+    }
+  }
+  return merged;
+}
+
+// Called on login/register: merges the guest cart into the user's saved cart.
+export function attachCartToUser(userId: string) {
+  if (typeof window === "undefined") return;
+  const merged = mergeItems(readUserCart(userId), useCartStore.getState().items);
+  writeUserCart(userId, merged);
+  useCartStore.setState({ items: merged });
+}
+
+// Called on logout: persists the cart under the user key, then resets the
+// active cart so the next person on this device starts empty.
+export function detachCart(userId: string) {
+  if (typeof window === "undefined") return;
+  writeUserCart(userId, useCartStore.getState().items);
+  useCartStore.setState({ items: [] });
+}

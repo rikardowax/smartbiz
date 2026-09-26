@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { attachCartToUser, detachCart } from "./cart-store";
 
 export interface User {
   id: string;
@@ -32,24 +33,30 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       accessToken: null,
       refreshToken: null,
       user: null,
       isAuthenticated: false,
-      setAuth: (data) =>
-        set({
-          ...data,
-          isAuthenticated: true,
-        }),
+      setAuth: (data) => {
+        const previousUserId = get().user?.id;
+        if (previousUserId && previousUserId !== data.user.id) {
+          detachCart(previousUserId);
+        }
+        attachCartToUser(data.user.id);
+        set({ ...data, isAuthenticated: true });
+      },
       setUser: (user) => set({ user }),
-      logout: () =>
+      logout: () => {
+        const userId = get().user?.id;
+        if (userId) detachCart(userId);
         set({
           accessToken: null,
           refreshToken: null,
           user: null,
           isAuthenticated: false,
-        }),
+        });
+      },
     }),
     {
       name: "smartbiz-auth",
