@@ -5,6 +5,7 @@ Marketplace et ERP intelligent pour les commerçants africains.
 > **Nouveau sur le projet ?**
 > - 👤 Utilisateurs : [`docs/GUIDE-UTILISATEUR.md`](docs/GUIDE-UTILISATEUR.md)
 > - 👨‍💻 Développeurs : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+> - 📖 Guide complet (app + code) : [`docs/GUIDE-COMPLET.md`](docs/GUIDE-COMPLET.md)
 
 ## Stack
 
