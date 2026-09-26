@@ -211,7 +211,17 @@
     "total": "Total",
     "noShopReviewYet": "Aucun avis pour cette boutique pour le moment.",
     "whatsappShop": "Bonjour {name}, je voudrais passer une commande.",
-    "whatsappProduct": "Bonjour {shop}, je suis intéressé par « {product} » ({price})."
+    "whatsappProduct": "Bonjour {shop}, je suis intéressé par « {product} » ({price}).",
+    "contactName": "Nom complet",
+    "contactPhone": "Téléphone de contact",
+    "deliveryCity": "Ville de livraison",
+    "login": "Se connecter",
+    "orderPaymentMethod": "Mode de paiement",
+    "guestCheckoutHint": "Commandez sans compte — ou connectez-vous pour suivre vos commandes plus facilement.",
+    "orderPaymentMethodCASH_ON_DELIVERY": "Paiement à la livraison",
+    "orderPaymentMethodMOBILE_MONEY": "Mobile Money (MTN / Orange)",
+    "orderPaymentMethodBANK_TRANSFER": "Virement bancaire",
+    "orderPaymentMethodCARD": "Carte bancaire"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -419,7 +429,8 @@
     "noResults": "Aucun résultat",
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
-    "byCategory": "Par catégorie"
+    "byCategory": "Par catégorie",
+    "email": "Email"
   },
   "account": {
     "profile": "Infos perso",

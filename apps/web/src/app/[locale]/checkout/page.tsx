@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Lock, ShoppingCart } from "lucide-react";
+import { Loader2, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -36,21 +36,6 @@ export default function CheckoutPage() {
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-2xl flex-col items-center justify-center px-4 py-16 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-          <Lock className="h-9 w-9 text-muted-foreground" />
-        </div>
-        <h1 className="mt-5 text-2xl font-bold text-foreground">{t("checkoutTitle")}</h1>
-        <p className="mt-2 text-muted-foreground">{t("loginToCheckout")}</p>
-        <Button asChild className="mt-6">
-          <Link href="/login">{t("login")}</Link>
-        </Button>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -122,6 +107,15 @@ export default function CheckoutPage() {
           className="space-y-4 rounded-xl border border-border bg-card p-5"
         >
           <h2 className="text-base font-semibold text-card-foreground">{t("deliveryInfo")}</h2>
+
+          {!isAuthenticated && (
+            <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+              {t("guestCheckoutHint")}{" "}
+              <Link href="/login" className="font-semibold text-primary hover:underline">
+                {t("login")}
+              </Link>
+            </p>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>

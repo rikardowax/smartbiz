@@ -18,6 +18,7 @@ interface BuyerOrder {
   status: OrderStatus;
   paymentStatus: string;
   total: number;
+  contactPhone: string;
   placedAt: string;
   shop: { id: string; name: string; slug: string; logoUrl: string | null; phone: string };
   items: {
@@ -86,9 +87,10 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
-            <article
+            <Link
               key={order.id}
-              className="rounded-xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/30"
+              href={`/track?n=${encodeURIComponent(order.orderNumber)}&p=${encodeURIComponent(order.contactPhone)}`}
+              className="block rounded-xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-sm"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
@@ -152,7 +154,7 @@ export default function OrdersPage() {
                   <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
                 </span>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}
