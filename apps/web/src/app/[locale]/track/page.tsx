@@ -1,6 +1,15 @@
 "use client";
 
-import { CheckCircle2, Loader2, MapPin, Package, Phone, Search, Store } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  Package,
+  Phone,
+  Search,
+  Store,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -17,6 +26,7 @@ interface TrackedOrder {
   orderNumber: string;
   status: OrderStatus;
   paymentStatus: string;
+  paymentMethod: string;
   total: number;
   deliveryFee: number;
   contactName: string;
@@ -188,6 +198,36 @@ export default function TrackPage() {
                 </p>
               </div>
             </div>
+
+            {/* Règlement via WhatsApp du vendeur tant que le paiement est en attente */}
+            {order.paymentStatus !== "PAID" &&
+              order.paymentMethod !== "CASH_ON_DELIVERY" &&
+              order.shop.whatsappNumber && (
+                <div className="mt-4 rounded-lg border border-[#25D366]/30 bg-[#25D366]/5 p-3">
+                  <p className="text-xs text-muted-foreground">{t("payHint")}</p>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="mt-2 w-full gap-1.5 bg-[#25D366] text-white hover:bg-[#128C7E]"
+                  >
+                    <a
+                      href={`https://wa.me/${order.shop.whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
+                        t("whatsappPayment", {
+                          shop: order.shop.name,
+                          order: order.orderNumber,
+                          total: formatPrice(order.total),
+                          method: t(`method.${order.paymentMethod}`),
+                        }),
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      {t("payViaWhatsApp")}
+                    </a>
+                  </Button>
+                </div>
+              )}
           </div>
 
           {/* Progression */}

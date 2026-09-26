@@ -1,7 +1,6 @@
 "use client";
 
-import { Loader2, ShoppingCart } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { CheckCircle2, Loader2, MessageCircle, ShoppingCart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,9 +15,17 @@ import { useCartStore } from "@/stores/cart-store";
 
 const PAYMENT_METHODS = ["CASH_ON_DELIVERY", "MOBILE_MONEY", "BANK_TRANSFER", "CARD"] as const;
 
+interface PlacedOrder {
+  id: string;
+  orderNumber: string;
+  total: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  shop: { name: string; slug: string; whatsappNumber: string | null };
+}
+
 export default function CheckoutPage() {
   const t = useTranslations("marketplace");
-  const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
@@ -33,9 +40,91 @@ export default function CheckoutPage() {
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<(typeof PAYMENT_METHODS)[number]>("CASH_ON_DELIVERY");
+  const [placedOrders, setPlacedOrders] = useState<PlacedOrder[]>([]);
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+  // Écran de confirmation après création — le panier est déjà vidé,
+  // donc ce rendu passe AVANT le cas « panier vide ».
+  if (placedOrders.length > 0) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+        <div className="text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+            <CheckCircle2 className="h-9 w-9 text-success" />
+          </div>
+          <h1 className="mt-4 text-2xl font-bold text-foreground">{t("orderPlacedTitle")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {placedOrders.length > 1 ? t("orderPlacedDescMulti") : t("orderPlacedDesc")}
+          </p>
+        </div>
+
+        <div className="mt-6 space-y-3">
+          {placedOrders.map((order) => {
+            const whatsapp = order.shop.whatsappNumber;
+            const needsPayment = order.paymentMethod !== "CASH_ON_DELIVERY";
+            const waMessage = t("whatsappPayment", {
+              shop: order.shop.name,
+              order: order.orderNumber,
+              total: formatPrice(order.total),
+              method: t(`orderPaymentMethod${order.paymentMethod}`),
+            });
+            return (
+              <div key={order.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm font-bold text-card-foreground">
+                      {order.orderNumber}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{order.shop.name}</p>
+                  </div>
+                  <p className="shrink-0 text-base font-bold text-primary tabular">
+                    {formatPrice(order.total)}
+                  </p>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline" className="flex-1">
+                    <Link
+                      href={`/track?n=${encodeURIComponent(order.orderNumber)}&p=${encodeURIComponent(contactPhone.trim())}`}
+                    >
+                      {t("trackOrder")}
+                    </Link>
+                  </Button>
+                  {needsPayment && whatsapp && (
+                    <Button
+                      asChild
+                      size="sm"
+                      className="flex-1 gap-1.5 bg-[#25D366] text-white hover:bg-[#128C7E]"
+                    >
+                      <a
+                        href={`https://wa.me/${whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(waMessage)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        {t("payViaWhatsApp")}
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {placedOrders.some((o) => o.paymentMethod !== "CASH_ON_DELIVERY") && (
+          <p className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-center text-xs text-muted-foreground">
+            {t("paymentPendingNote")}
+          </p>
+        )}
+
+        <Button asChild variant="outline" className="mt-6 w-full">
+          <Link href="/marketplace">{t("continueShopping")}</Link>
+        </Button>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -65,7 +154,7 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const created = await apiFetch<{ orders: { orderNumber: string }[] }>("/orders/checkout", {
+      const created = await apiFetch<{ orders: PlacedOrder[] }>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -79,16 +168,10 @@ export default function CheckoutPage() {
       });
       clear();
       toast.success(t("orderSuccess"));
-      // Une commande par boutique : on suit la première, la liste complète est
-      // accessible depuis le compte ou via /track pour les invités.
-      const first = created.orders?.[0];
-      if (first?.orderNumber) {
-        router.push(
-          `/track?n=${encodeURIComponent(first.orderNumber)}&p=${encodeURIComponent(contactPhone.trim())}`,
-        );
-      } else {
-        router.push("/marketplace");
-      }
+      // Écran de confirmation : une carte par boutique avec son numéro,
+      // le lien de suivi et — si le paiement n'est pas à la livraison —
+      // un bouton WhatsApp pour régler directement le vendeur.
+      setPlacedOrders(created.orders ?? []);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t("error"));
     } finally {

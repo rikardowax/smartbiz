@@ -221,7 +221,14 @@
     "orderPaymentMethodCASH_ON_DELIVERY": "Paiement à la livraison",
     "orderPaymentMethodMOBILE_MONEY": "Mobile Money (MTN / Orange)",
     "orderPaymentMethodBANK_TRANSFER": "Virement bancaire",
-    "orderPaymentMethodCARD": "Carte bancaire"
+    "orderPaymentMethodCARD": "Carte bancaire",
+    "orderPlacedTitle": "Commande confirmée !",
+    "orderPlacedDesc": "Votre commande a été transmise au vendeur. Notez bien son numéro.",
+    "orderPlacedDescMulti": "Votre panier couvrait plusieurs boutiques — une commande a été créée par vendeur.",
+    "trackOrder": "Suivre la commande",
+    "payViaWhatsApp": "Régler sur WhatsApp",
+    "whatsappPayment": "Bonjour {shop}, je viens de passer la commande {order} ({total}). Je souhaite régler par {method}.",
+    "paymentPendingNote": "Votre commande sera préparée dès que le vendeur confirmera la réception du paiement."
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -651,6 +658,15 @@
     "progress": "Progression",
     "history": "Historique",
     "items": "Contenu de la commande",
-    "total": "Total"
+    "total": "Total",
+    "payHint": "Réglez votre commande directement auprès du vendeur :",
+    "payViaWhatsApp": "Payer via WhatsApp",
+    "whatsappPayment": "Bonjour {shop}, je viens de passer la commande {order} ({total}). Je souhaite régler par {method}.",
+    "method": {
+      "CASH_ON_DELIVERY": "paiement à la livraison",
+      "MOBILE_MONEY": "Mobile Money",
+      "BANK_TRANSFER": "virement bancaire",
+      "CARD": "carte bancaire"
+    }
   }
 }

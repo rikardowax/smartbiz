@@ -221,7 +221,14 @@
     "orderPaymentMethodCASH_ON_DELIVERY": "Cash on delivery",
     "orderPaymentMethodMOBILE_MONEY": "Mobile Money (MTN / Orange)",
     "orderPaymentMethodBANK_TRANSFER": "Bank transfer",
-    "orderPaymentMethodCARD": "Bank card"
+    "orderPaymentMethodCARD": "Bank card",
+    "orderPlacedTitle": "Order confirmed!",
+    "orderPlacedDesc": "Your order has been sent to the seller. Keep its number safe.",
+    "orderPlacedDescMulti": "Your cart covered multiple shops — one order was created per seller.",
+    "trackOrder": "Track order",
+    "payViaWhatsApp": "Pay via WhatsApp",
+    "whatsappPayment": "Hello {shop}, I just placed order {order} ({total}). I would like to pay by {method}.",
+    "paymentPendingNote": "Your order will be prepared once the seller confirms your payment."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -651,6 +658,15 @@
     "progress": "Progress",
     "history": "History",
     "items": "Order items",
-    "total": "Total"
+    "total": "Total",
+    "payHint": "Pay for your order directly with the seller:",
+    "payViaWhatsApp": "Pay via WhatsApp",
+    "whatsappPayment": "Hello {shop}, I just placed order {order} ({total}). I would like to pay by {method}.",
+    "method": {
+      "CASH_ON_DELIVERY": "cash on delivery",
+      "MOBILE_MONEY": "Mobile Money",
+      "BANK_TRANSFER": "bank transfer",
+      "CARD": "bank card"
+    }
   }
 }
