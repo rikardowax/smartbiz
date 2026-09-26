@@ -2,8 +2,9 @@
 
 Marketplace et ERP intelligent pour les commerçants africains.
 
-> **Nouveau sur le projet ?** Lisez [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —
-> vue d'ensemble, modèle de données, parcours utilisateurs, carte des API et configuration.
+> **Nouveau sur le projet ?**
+> - 👤 Utilisateurs : [`docs/GUIDE-UTILISATEUR.md`](docs/GUIDE-UTILISATEUR.md)
+> - 👨‍💻 Développeurs : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## Stack
 
